@@ -55,4 +55,15 @@ public static class BrowserLaunchOptionsFactory
     /// </summary>
     public static bool EffectiveHeaded(TestSettings s) =>
         HeadedFromEnv() ?? !s.Browser.Headless;
+
+    /// <summary>
+    /// Builds concrete <see cref="BrowserTypeLaunchOptions"/> for code paths
+    /// that own the browser lifecycle directly — e.g. auth-state priming
+    /// in <c>MemberTest.PrimeMemberAuthState</c>, where we cannot rely on
+    /// Playwright-NUnit's per-worker <c>Browser</c> property being ready yet.
+    /// </summary>
+    public static BrowserTypeLaunchOptions Build(TestSettings s) => new()
+    {
+        Headless = !EffectiveHeaded(s)
+    };
 }

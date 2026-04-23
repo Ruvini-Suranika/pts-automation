@@ -58,7 +58,14 @@ public abstract class AdminTest : BaseTest
             return;
         }
 
-        await using var context = await Browser.NewContextAsync(ContextOptionsFactory.Build(Settings));
+        // See MemberTest.PrimeMemberAuthState for why we own the browser
+        // lifecycle here instead of reusing PageTest.Browser.
+        using var pw = await Microsoft.Playwright.Playwright.CreateAsync();
+        var browserType = ResolveBrowserType(pw);
+        await using var browser = await browserType.LaunchAsync(
+            BrowserLaunchOptionsFactory.Build(Settings));
+
+        await using var context = await browser.NewContextAsync(ContextOptionsFactory.Build(Settings));
         var page = await context.NewPageAsync();
         var login = new AdminLoginPage(page, Settings.Applications.Admin);
 
@@ -70,5 +77,19 @@ public abstract class AdminTest : BaseTest
         AuthStateCache.MarkPrimed(Role);
 
         Log.For<AdminTest>().Information("Admin auth state primed at {Path}", statePath);
+    }
+
+    private static IBrowserType ResolveBrowserType(IPlaywright pw)
+    {
+        var name = System.Environment.GetEnvironmentVariable("BROWSER")
+                   ?? ConfigFactory.Settings.Browser.Name
+                   ?? "chromium";
+
+        return name.ToLowerInvariant() switch
+        {
+            "firefox" => pw.Firefox,
+            "webkit"  => pw.Webkit,
+            _         => pw.Chromium
+        };
     }
 }

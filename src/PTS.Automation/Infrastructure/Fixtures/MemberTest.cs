@@ -62,7 +62,18 @@ public abstract class MemberTest : BaseTest
             return;
         }
 
-        await using var context = await Browser.NewContextAsync(ContextOptionsFactory.Build(Settings));
+        // NOTE: we own the Playwright / Browser / Context lifecycle here rather
+        // than reusing PageTest.Browser. Playwright-NUnit's per-worker Browser
+        // property isn't reliably initialised at the moment this [OneTimeSetUp]
+        // runs, so we stand up a throwaway instance to do the UI login and
+        // persist storage state to disk. Every subsequent test then picks up
+        // the cached state via ContextOptionsFactory.Build(..., storageStatePath).
+        using var pw = await Microsoft.Playwright.Playwright.CreateAsync();
+        var browserType = ResolveBrowserType(pw);
+        await using var browser = await browserType.LaunchAsync(
+            BrowserLaunchOptionsFactory.Build(Settings));
+
+        await using var context = await browser.NewContextAsync(ContextOptionsFactory.Build(Settings));
         var page = await context.NewPageAsync();
         var login = new LoginPage(page, Settings.Applications.Member);
 
@@ -74,5 +85,19 @@ public abstract class MemberTest : BaseTest
         AuthStateCache.MarkPrimed(Role);
 
         Log.For<MemberTest>().Information("Member auth state primed at {Path}", statePath);
+    }
+
+    private static IBrowserType ResolveBrowserType(IPlaywright pw)
+    {
+        var name = System.Environment.GetEnvironmentVariable("BROWSER")
+                   ?? ConfigFactory.Settings.Browser.Name
+                   ?? "chromium";
+
+        return name.ToLowerInvariant() switch
+        {
+            "firefox" => pw.Firefox,
+            "webkit"  => pw.Webkit,
+            _         => pw.Chromium
+        };
     }
 }
