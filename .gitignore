@@ -1,0 +1,46 @@
+# Build / bin / obj
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.vs/
+.vs/
+
+# Rider / VS Code / IDE
+.idea/
+.vscode/
+*.swp
+
+# Test results
+TestResults/
+allure-results/
+allure-report/
+
+# Playwright artifacts
+playwright-report/
+playwright/.cache/
+trace/
+videos/
+screenshots/
+.playwright/
+test-results/
+
+# NuGet
+*.nupkg
+.nuget/
+
+# Local config (never commit credentials)
+appsettings.local.json
+secrets.json
+.env
+.env.*
+
+# Auth state (generated per-run, contains session cookies)
+.auth/
+*.storage-state.json
+
+# OS
+Thumbs.db
+.DS_Store

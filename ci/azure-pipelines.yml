@@ -1,0 +1,134 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: "0 2 * * *"       # 02:00 UTC nightly
+    displayName: Nightly regression
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  - name: environment
+    displayName: Target environment
+    type: string
+    default: qa
+    values: [qa]            # add uat/staging once appsettings.{env}.json files exist
+
+  - name: testFilter
+    displayName: NUnit filter (leave blank for all)
+    type: string
+    default: Category=Smoke
+
+variables:
+  - group: pts-automation-secrets          # Azure DevOps variable group containing PTS_* secrets
+  - name: buildConfiguration
+    value: Release
+  - name: solution
+    value: PTS.Automation.sln
+  - name: dotnetVersion
+    value: 8.0.x
+
+pool:
+  vmImage: windows-latest
+
+stages:
+  - stage: Test
+    displayName: Run automated tests
+    jobs:
+      - job: PlaywrightTests
+        displayName: Playwright (${{ parameters.environment }})
+        timeoutInMinutes: 120
+        steps:
+          - task: UseDotNet@2
+            displayName: Install .NET SDK $(dotnetVersion)
+            inputs:
+              packageType: sdk
+              version: $(dotnetVersion)
+
+          - task: DotNetCoreCLI@2
+            displayName: Restore
+            inputs:
+              command: restore
+              projects: $(solution)
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              projects: $(solution)
+              arguments: --configuration $(buildConfiguration) --no-restore
+
+          - task: PowerShell@2
+            displayName: Install Playwright browsers
+            inputs:
+              targetType: inline
+              script: |
+                $pw = Get-ChildItem -Recurse -Filter playwright.ps1 | Where-Object FullName -Match "bin\\$(buildConfiguration)\\net8.0" | Select-Object -First 1
+                if (-not $pw) { throw "playwright.ps1 not found" }
+                pwsh $pw.FullName install --with-deps
+
+          - task: DotNetCoreCLI@2
+            displayName: Run tests (filter=${{ parameters.testFilter }})
+            env:
+              TEST_ENV: ${{ parameters.environment }}
+              PTS_Users__Member__Username: $(MemberUsername)
+              PTS_Users__Member__Password: $(MemberPassword)
+              PTS_Users__PtsAdmin__Username: $(PtsAdminUsername)
+              PTS_Users__PtsAdmin__Password: $(PtsAdminPassword)
+            inputs:
+              command: test
+              projects: $(solution)
+              arguments: >-
+                --configuration $(buildConfiguration)
+                --no-build
+                --settings .runsettings
+                --logger "trx;LogFileName=test-results.trx"
+                --results-directory $(Agent.TempDirectory)/TestResults
+                ${{ if ne(parameters.testFilter, '') }}:
+                  --filter "${{ parameters.testFilter }}"
+
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            displayName: Publish test results
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: '**/test-results.trx'
+              searchFolder: $(Agent.TempDirectory)/TestResults
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: PTS Automation (${{ parameters.environment }})
+
+          - task: PublishPipelineArtifact@1
+            condition: succeededOrFailed()
+            displayName: Publish Playwright traces
+            inputs:
+              targetPath: $(Agent.TempDirectory)/TestResults/traces
+              artifact: playwright-traces
+              publishLocation: pipeline
+
+          - task: PublishPipelineArtifact@1
+            condition: succeededOrFailed()
+            displayName: Publish screenshots
+            inputs:
+              targetPath: $(Agent.TempDirectory)/TestResults/screenshots
+              artifact: screenshots
+              publishLocation: pipeline
+
+          - task: PublishPipelineArtifact@1
+            condition: succeededOrFailed()
+            displayName: Publish Allure results
+            inputs:
+              targetPath: src/PTS.Automation/bin/$(buildConfiguration)/net8.0/allure-results
+              artifact: allure-results
+              publishLocation: pipeline

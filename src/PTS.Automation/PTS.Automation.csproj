@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>PTS.Automation</RootNamespace>
+    <AssemblyName>PTS.Automation</AssemblyName>
+
+    <!-- User secrets ID: used by `dotnet user-secrets` for local-only credentials.
+         Local secrets live at %APPDATA%\Microsoft\UserSecrets\<this id>\secrets.json -->
+    <UserSecretsId>pts-automation-4f2a9c01-7d6b-4a8e-9f1c-5b3d8e2a6c0f</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup Label="Playwright">
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Microsoft.Playwright.NUnit" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="NUnit.Analyzers" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  </ItemGroup>
+
+  <ItemGroup Label="Configuration">
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+  </ItemGroup>
+
+  <ItemGroup Label="Logging">
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup Label="Reporting">
+    <PackageReference Include="Allure.NUnit" />
+  </ItemGroup>
+
+  <ItemGroup Label="Config files copied to test output">
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.qa.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.local.json" Condition="Exists('appsettings.local.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="allureConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

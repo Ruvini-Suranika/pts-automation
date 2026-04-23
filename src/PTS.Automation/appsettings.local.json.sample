@@ -1,0 +1,20 @@
+{
+  "_comment": [
+    "Copy this file to `appsettings.local.json` and fill in the values you want to override.",
+    "This file is gitignored — never commit real credentials.",
+    "Precedence (later wins):",
+    "  appsettings.json -> appsettings.{TEST_ENV}.json -> appsettings.local.json -> user-secrets -> PTS_* env vars",
+    "For credentials, prefer `dotnet user-secrets` (stored outside the repo) over this file."
+  ],
+
+  "Browser": {
+    "Headless": false,
+    "Video": "retain-on-failure",
+    "Trace": "retain-on-failure"
+  },
+
+  "Users": {
+    "Member":   { "Username": "", "Password": "" },
+    "PtsAdmin": { "Username": "", "Password": "" }
+  }
+}

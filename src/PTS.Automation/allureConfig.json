@@ -1,0 +1,10 @@
+{
+  "allure": {
+    "directory": "allure-results",
+    "title": "PTS Automation",
+    "links": [
+      { "type": "issue", "urlTemplate": "https://jira.example.com/browse/{}" },
+      { "type": "tms",   "urlTemplate": "https://tms.example.com/case/{}" }
+    ]
+  }
+}

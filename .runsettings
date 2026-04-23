@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+
+  <RunConfiguration>
+    <ResultsDirectory>./TestResults</ResultsDirectory>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <MaxCpuCount>4</MaxCpuCount>
+    <EnvironmentVariables>
+      <!-- Default test environment. Override on CLI: $env:TEST_ENV = "qa" -->
+      <TEST_ENV>qa</TEST_ENV>
+    </EnvironmentVariables>
+
+    <!-- Playwright browser / headed mode can be overridden on CLI:
+           $env:BROWSER = "chromium" | "firefox" | "webkit"
+           $env:HEADED  = "1"   # watch the browser
+         Defaults: chromium, headless. -->
+
+  </RunConfiguration>
+
+  <NUnit>
+    <!-- Default 5-minute timeout per test -->
+    <DefaultTimeout>300000</DefaultTimeout>
+    <!-- Run test fixtures in parallel; tests within a fixture remain sequential -->
+    <NumberOfTestWorkers>4</NumberOfTestWorkers>
+  </NUnit>
+
+  <TestRunParameters>
+    <Parameter name="TEST_ENV" value="qa" />
+  </TestRunParameters>
+
+</RunSettings>
