@@ -14,6 +14,18 @@ public static class AuthStateCache
     private static readonly object _lock = new();
     private static readonly HashSet<string> _primed = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Serialises the prime-auth-state flow across parallel NUnit fixtures.
+    /// Without this, two <c>*Test</c> fixtures (e.g. BookingListTests +
+    /// TransactionsTests) can reach <see cref="IsPrimed"/> simultaneously,
+    /// both return <c>false</c>, both run a UI login, and both race to write
+    /// the same <c>storage-state.json</c> file — yielding
+    /// <c>IOException: being used by another process</c>. The semaphore
+    /// is held for the duration of one role's login; other fixtures wait,
+    /// then see <see cref="IsPrimed"/> is true and return immediately.
+    /// </summary>
+    public static readonly SemaphoreSlim PrimeLock = new(1, 1);
+
     public static string PathFor(TestSettings s, string role)
     {
         Directory.CreateDirectory(s.Paths.AuthStateDir);
