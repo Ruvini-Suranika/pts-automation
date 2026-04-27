@@ -16,9 +16,12 @@ public sealed class AdminLoginPage : BasePage
 
     public override string RelativePath => App.LoginPath;
 
-    private ILocator UsernameInput => Page.Locator("#Username");
-    private ILocator PasswordInput => Page.Locator("#Password");
-    private ILocator LoginButton   => Page.Locator("#loginBtn");
+    private ILocator UsernameInput      => Page.Locator("#Username");
+    private ILocator PasswordInput      => Page.Locator("#Password");
+    private ILocator LoginButton        => Page.Locator("#loginBtn");
+    private ILocator ForgotPasswordLink => Page.GetByRole(AriaRole.Link, new() { Name = "Forgot password?" });
+    private ILocator Heading            => Page.Locator(".login-form__heading, .login-box h1").First;
+    private ILocator ErrorMessage       => Page.Locator(".login-form__text.fw-bold, .error").First;
 
     protected override ILocator ReadinessIndicator => UsernameInput;
 
@@ -66,4 +69,14 @@ public sealed class AdminLoginPage : BasePage
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle,
             new PageWaitForLoadStateOptions { Timeout = Settings.Timeouts.NavigationMs });
     }
+
+    /// <summary>Same shared <c>Login.cshtml</c> as the Member portal — exposed for smoke assertions.</summary>
+    public Task<string> GetHeadingTextAsync() => Heading.InnerTextAsync();
+
+    public Task<bool> IsForgotPasswordLinkVisibleAsync() => ForgotPasswordLink.IsVisibleAsync();
+
+    public async Task<string?> GetErrorMessageAsync() =>
+        await ErrorMessage.CountAsync() > 0 && await ErrorMessage.IsVisibleAsync()
+            ? (await ErrorMessage.InnerTextAsync()).Trim()
+            : null;
 }

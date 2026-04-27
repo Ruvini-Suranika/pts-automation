@@ -9,6 +9,19 @@ public static class Categories
     public const string Negative     = "Negative";
     public const string Slow         = "Slow";
 
+    /// <summary>Risk / backlog tier from <c>docs/ADMIN-TEST-CASE-PRIORITY.md</c> — filter: <c>Category=P0</c>.</summary>
+    public const string P0 = "P0";
+    public const string P1 = "P1";
+    public const string P2 = "P2";
+    public const string P3 = "P3";
+
+    /// <summary>Admin epic tags for suite grouping (same doc).</summary>
+    public const string EpicTrustAccounts      = "Epic.TrustAccounts";
+    public const string EpicReconciliation     = "Epic.Reconciliation";
+    public const string EpicDebits             = "Epic.Debits";
+    public const string EpicTrustee           = "Epic.Trustee";
+    public const string EpicCreditsOverviews  = "Epic.CreditsOverviews";
+
     public const string Member       = "Member";
     public const string Admin        = "Admin";
 

@@ -1,3 +1,4 @@
+using Allure.NUnit;
 using PTS.Automation.Infrastructure.Playwright;
 
 namespace PTS.Automation.Infrastructure.Fixtures;
@@ -14,6 +15,7 @@ namespace PTS.Automation.Infrastructure.Fixtures;
 /// Subclasses should override <see cref="ContextOptions"/> to inject auth state.
 /// </summary>
 [Parallelizable(ParallelScope.Fixtures)]
+[AllureNUnit]
 public abstract class BaseTest : PageTest
 {
     protected TestSettings Settings => ConfigFactory.Settings;
