@@ -11,6 +11,8 @@ namespace PTS.Automation.Features.Admin.P0.Debits;
 public sealed class AdminDebitsAuthorisedP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-D2 — Debits Authorised screen (nav + readiness).")]
     public async Task ADMIN_P0_D2_Debits_Authorised_screen_validation()
     {

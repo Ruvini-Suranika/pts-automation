@@ -14,6 +14,7 @@ namespace PTS.Automation.Features.Smoke;
 public class AdminShellSmokeTests : AdminTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("Primed PtsAdmin session loads Admin Index with header and profile chrome.")]
     public async Task Authenticated_admin_sees_enquiries_shell()
     {
@@ -41,6 +42,7 @@ public class AdminShellSmokeTests : AdminTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Logout ends the admin session; revisiting a protected admin URL requires login.")]
     public async Task Logout_ends_admin_session()
     {

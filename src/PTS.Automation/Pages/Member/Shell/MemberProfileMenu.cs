@@ -47,6 +47,7 @@ public sealed class MemberProfileMenu
     // ── Actions ────────────────────────────────────────────────────────
     public async Task OpenAsync()
     {
+        await MemberShellOverlays.DismissCalendarNotesModalIfBlockingAsync(_page);
         await Toggle.ClickAsync();
         await Menu.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
     }

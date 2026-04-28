@@ -26,7 +26,7 @@ public class TransactionsTests : MemberTest
     private const string FeatureCategory = "Accounts.Transactions";
 
     // QA backlog item 1 ------------------------------------------------------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Transactions page loads with filter panel, inline grid search, "
                  + "three-dots menu toggle, and the documented column headers.")]
     public async Task Page_loads_with_filter_panel_and_grid_chrome()
@@ -56,7 +56,7 @@ public class TransactionsTests : MemberTest
     }
 
     // QA backlog item 2 ------------------------------------------------------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("The three-dots (#filterCorner) dropdown exposes the four "
                  + "documented actions: Copy to clipboard, Print, Download PDF, Download Excel. "
                  + "PDF and Excel links point at the expected export endpoints.")]
@@ -98,7 +98,7 @@ public class TransactionsTests : MemberTest
     }
 
     // QA backlog item 3 ------------------------------------------------------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Refine search: the inline #search input hides non-matching rows "
                  + "client-side on keyup (no AJAX).")]
     public async Task Refine_search_filters_rows_client_side()
@@ -132,7 +132,7 @@ public class TransactionsTests : MemberTest
     }
 
     // QA backlog item 4 ------------------------------------------------------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("The first row's Booking Ref column is a link that points at the "
                  + "booking-details / booking-overview page.")]
     public async Task Booking_reference_link_points_to_booking_details()
@@ -169,7 +169,7 @@ public class TransactionsTests : MemberTest
     }
 
     // QA backlog item 5 ------------------------------------------------------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("The first row's Customer Ref column is a link that points at the "
                  + "client-details / client-overview page.")]
     public async Task Customer_reference_link_points_to_client_details()
@@ -204,7 +204,7 @@ public class TransactionsTests : MemberTest
     }
 
     // Bonus: validates the filter contract without needing any data --------
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.Hybrid)]
     [Description("Search GET to /Client/TransactionsResults carries the Additional Narrative "
                  + "value in the query string when the user enters it (round-trip filter check).")]
     public async Task Additional_narrative_filter_round_trips_into_search_request()

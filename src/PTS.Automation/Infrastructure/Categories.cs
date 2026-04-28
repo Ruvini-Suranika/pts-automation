@@ -5,6 +5,15 @@ public static class Categories
 {
     public const string Smoke        = "Smoke";
     public const string Regression   = "Regression";
+
+    /// <summary>Browser / DOM interaction without asserting captured HTTP traffic.</summary>
+    public const string UI = "UI";
+
+    /// <summary>Asserts on real HTTP requests or responses without driving UI for that assertion.</summary>
+    public const string API = "API";
+
+    /// <summary>UI actions plus explicit assertions on network (captured request/response).</summary>
+    public const string Hybrid = "Hybrid";
     public const string E2E          = "E2E";
     public const string Negative     = "Negative";
     public const string Slow         = "Slow";

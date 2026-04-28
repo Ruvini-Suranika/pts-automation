@@ -15,11 +15,13 @@ public sealed class AdminDebitsGroupingPage : AdminPage
 
     protected override ILocator ReadinessIndicator => GroupButton;
 
-    /// <summary>Pay action links share <c>title="Pay"</c> (duplicate <c>id</c> in markup — never use CSS id).</summary>
-    public ILocator PayLinks => Page.Locator("a.ForPaymentPauseStatus[title='Pay']");
+    /// <summary>Pay action links — Bootstrap tooltips may move <c>title</c> to <c>data-bs-original-title</c>.</summary>
+    public ILocator PayLinks => Page.Locator(
+        "#debitgrouping tbody a.ForPaymentPauseStatus[title='Pay'], #debitgrouping tbody a.ForPaymentPauseStatus[data-bs-original-title='Pay']");
 
-    /// <summary>Currency action links (<c>title="Currency"</c>).</summary>
-    public ILocator CurrencyLinks => Page.Locator("a[title='Currency']");
+    /// <summary>Currency action links (same tooltip caveat as <see cref="PayLinks"/>).</summary>
+    public ILocator CurrencyLinks => Page.Locator(
+        "#debitgrouping tbody a[title='Currency'], #debitgrouping tbody a[data-bs-original-title='Currency']");
 
     public Task<bool> IsGroupingTableVisibleAsync() => Page.Locator("table#debitgrouping").IsVisibleAsync();
 }

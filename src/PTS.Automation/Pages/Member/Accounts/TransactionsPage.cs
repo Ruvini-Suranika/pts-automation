@@ -188,7 +188,27 @@ public sealed class TransactionsPage : MemberPage
         // native select.
         const string script = @"
             () => {
-                const pick = (id) => {
+                // Prefer the *last* non-placeholder Period option — dropdowns are usually
+                // ordered narrow→wide; QA members may have no rows in the default window.
+                const pickLast = (id) => {
+                    const sel = document.querySelector(id);
+                    if (!sel) return null;
+                    let chosen = null;
+                    for (const opt of sel.options) {
+                        const v = opt.value;
+                        if (v !== '0' && v !== '' && v != null) chosen = v;
+                    }
+                    if (!chosen && sel.options.length > 0) chosen = sel.options[0].value;
+                    const $sel = window.$ ? window.$(sel) : null;
+                    if ($sel && typeof $sel.selectpicker === 'function') {
+                        $sel.selectpicker('val', chosen);
+                    } else {
+                        sel.value = chosen;
+                    }
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                    return chosen;
+                };
+                const pickFirst = (id) => {
                     const sel = document.querySelector(id);
                     if (!sel) return null;
                     let chosen = null;
@@ -206,7 +226,7 @@ public sealed class TransactionsPage : MemberPage
                     sel.dispatchEvent(new Event('change', { bubbles: true }));
                     return chosen;
                 };
-                return { period: pick('#Period'), currency: pick('#Currency') };
+                return { period: pickLast('#Period'), currency: pickFirst('#Currency') };
             }";
         await Page.EvaluateAsync(script);
     }

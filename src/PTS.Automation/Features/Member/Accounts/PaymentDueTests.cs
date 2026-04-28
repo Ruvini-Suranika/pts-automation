@@ -25,7 +25,7 @@ public class PaymentDueTests : MemberTest
 {
     private const string FeatureCategory = "Accounts.PaymentDue";
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("BRANCH STORE column is present in the Payment Due grid header.")]
     public async Task Branch_store_column_is_present_in_grid_header()
     {
@@ -40,7 +40,7 @@ public class PaymentDueTests : MemberTest
             $"Expected a BRANCH STORE column. Got: {string.Join(" | ", headers)}");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Tick boxes: clicking the header check-all selects every row checkbox; " +
                  "clicking it again clears them.")]
     public async Task Tick_boxes_can_be_selected_and_cleared()
@@ -76,7 +76,7 @@ public class PaymentDueTests : MemberTest
             "After clicking select-all a second time, all row checkboxes should be cleared.");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Send Reminder is hidden until the initial AJAX completes; clicking it " +
                  "with no row selected does NOT open the email compose modal.")]
     public async Task Send_reminder_with_no_selection_does_not_open_email_modal()
@@ -100,7 +100,7 @@ public class PaymentDueTests : MemberTest
             "Per the dev JS, an inline error is shown instead.");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Refine search: typing a non-matching string in #searchDue hides every row " +
                  "(client-side filter, no AJAX).")]
     public async Task Refine_search_filters_rows_client_side()
@@ -125,7 +125,7 @@ public class PaymentDueTests : MemberTest
             $"Rows before: {rowsBefore}, visible after: {visibleAfter}");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.Hybrid)]
     [Description("Payment Type filter: selecting Deposit / Balance / Part-Payment then " +
                  "clicking Search fires a POST to /TravelMemberAccount/GetSearchPaymentDue " +
                  "with the matching PaymentTypeId in the body.")]
@@ -153,7 +153,7 @@ public class PaymentDueTests : MemberTest
             $"Actual body: {postData}");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Each rendered row's BOOKING column links to /Client/BookingDetails with the " +
                  "client + booking reference query params.")]
     public async Task Booking_link_in_row_points_to_BookingDetails()

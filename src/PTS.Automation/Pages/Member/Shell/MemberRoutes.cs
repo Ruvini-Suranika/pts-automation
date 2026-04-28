@@ -17,6 +17,19 @@ public static class MemberRoutes
     public const string Clients       = "Client/ClientSearchView";
     public const string Quotes        = "Quote/QuoteSearchView";
     public const string Bookings      = "Client/BookingSearchView";
+
+    /// <summary>Booking overview (summary) — query: <c>Id</c>, <c>BookingRefId</c>.</summary>
+    public const string BookingDetailsOverview = "Client/BookingDetails";
+
+    /// <summary>Booking management / itinerary shell — query: <c>id</c>, <c>BookingRefId</c>.</summary>
+    public const string ClientBookingDetailsManagement = "Client/ClientBookingDetails";
+
+    /// <summary>Booking Money — query: <c>Id</c>, <c>BookingRefId</c>.</summary>
+    public const string BookingMoney = "Client/Money";
+
+    /// <summary>Total booking fees (APC etc.) — query: <c>Id</c> (client ref new).</summary>
+    public const string BookingFee = "Client/BookingFee";
+
     public const string IssueTickets  = "Member/IssueTicket";
 
     // ── Calendar ───────────────────────────────────────────────────────

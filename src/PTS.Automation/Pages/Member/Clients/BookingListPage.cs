@@ -1,3 +1,4 @@
+using Microsoft.Playwright;
 using PTS.Automation.Pages.Member.Shell;
 using PTS.Automation.Pages.Shared.UiComponents;
 
@@ -54,6 +55,19 @@ public sealed class BookingListPage : MemberPage
     private ILocator ClearFiltersButton => Page.Locator("#btnreset");
     private ILocator GridSection        => Page.Locator("#bookingMainSection");
     private ILocator GridSearchInput    => Page.Locator("#search");
+
+    private ILocator AssignNewUserLink => Page.Locator("a.assigenNewUser.restricted_button_re_assgin_bookings");
+    private ILocator AssignUserModal     => Page.Locator("#assignUser");
+    private ILocator ReassignUserSelect  => Page.Locator("#dropdownUserReassignTo");
+    private ILocator ReassignAssignButton => Page.Locator("#btnReassign");
+
+    private ILocator ClientSearchToPdfLink   => Page.Locator("#ClientSearchToPdf");
+    private ILocator ClientSearchToExcelLink => Page.Locator("#ClientSearchToExcel");
+
+    private ILocator RowSelectionCheckboxes => Page.Locator("#clientsTableBody input[data-control='checkboxtick']");
+
+    /// <summary>Visible tick target wired to <c>.checkmark</c> click handler in <c>Client-booking.js</c>.</summary>
+    private ILocator FirstRowCheckmark => Page.Locator("#clientsTableBody span.checkmark").First;
 
     // Sub-nav tabs shared across Clients/Quotes/Bookings/Issue tickets
     private ILocator SubNavBookingsTab  => Page.Locator("section.table_header a.booking, article section.table_header a.booking").First;
@@ -141,4 +155,113 @@ public sealed class BookingListPage : MemberPage
     }
 
     public Task ClearFiltersAsync() => ClearFiltersButton.ClickAsync();
+
+    /// <summary>Three-dots menu on the bookings grid toolbar (not the Contact dropdown).</summary>
+    public Task OpenBookingsGridThreeDotsMenuAsync() =>
+        Page.Locator(".bookingFillter .filter_dot #filterCorner").ClickAsync();
+
+    public Task<bool> IsCopyToClipboardMenuItemVisibleAsync() =>
+        Page.GetByRole(AriaRole.Link, new() { Name = "Copy to clipboard" }).IsVisibleAsync();
+
+    public Task<bool> IsPrintMenuItemVisibleAsync() =>
+        Page.GetByRole(AriaRole.Link, new() { Name = "Print" }).IsVisibleAsync();
+
+    public async Task<string?> GetClientSearchPdfHrefAsync() =>
+        await ClientSearchToPdfLink.GetAttributeAsync("href");
+
+    public async Task<string?> GetClientSearchExcelHrefAsync() =>
+        await ClientSearchToExcelLink.GetAttributeAsync("href");
+
+    /// <summary>Selects a booking-type option by visible label (Bootstrap-select native <c>#dropDownClientType</c>).</summary>
+    public async Task SelectBookingTypeByLabelAsync(string label)
+    {
+        await BookingTypeFilter.SelectOptionAsync(
+            new SelectOptionValue { Label = label },
+            new LocatorSelectOptionOptions { Force = true });
+        await BookingTypeFilter.DispatchEventAsync("change");
+    }
+
+    /// <summary>Selects the first <c>&lt;option&gt;</c> with a non-empty <c>value</c> (skips placeholder).</summary>
+    public async Task<string?> SelectFirstNonEmptyBookingTypeValueAsync()
+    {
+        var opts = BookingTypeFilter.Locator("option");
+        var n = await opts.CountAsync();
+        for (var i = 0; i < n; i++)
+        {
+            var opt = opts.Nth(i);
+            var value = await opt.GetAttributeAsync("value");
+            if (string.IsNullOrWhiteSpace(value)) continue;
+            await BookingTypeFilter.SelectOptionAsync(
+                new SelectOptionValue { Value = value! },
+                new LocatorSelectOptionOptions { Force = true });
+            await BookingTypeFilter.DispatchEventAsync("change");
+            return value;
+        }
+        return null;
+    }
+
+    public Task<int> RowSelectionCheckboxCountAsync() => RowSelectionCheckboxes.CountAsync();
+
+    public Task SelectFirstRowSelectionCheckboxAsync() =>
+        RowSelectionCheckboxes.First.ClickAsync(new LocatorClickOptions { Force = true });
+
+    /// <summary>Clicks the first row’s tick UI (enables “Assign new user” via <c>.checkmark</c> handler).</summary>
+    public Task SelectFirstRowCheckmarkAsync() => FirstRowCheckmark.ClickAsync();
+
+    public Task ClickAssignNewUserAsync() => AssignNewUserLink.ClickAsync();
+
+    public async Task<bool> IsAssignNewUserLinkPointerEventsEnabledAsync()
+    {
+        var pe = await AssignNewUserLink.EvaluateAsync<string>("el => getComputedStyle(el).pointerEvents");
+        return !string.Equals(pe, "none", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public Task<bool> IsAssignUserModalVisibleAsync() =>
+        Page.Locator("#assignUser.show").IsVisibleAsync();
+
+    public Task<int> ReassignUserOptionCountAsync() =>
+        ReassignUserSelect.Locator("option").CountAsync();
+
+    /// <summary>First booking reference link in the grid (opens overview in a new tab).</summary>
+    public ILocator FirstBookingReferenceLink() =>
+        Page.Locator("#clientsTableBody a[href*=\"BookingDetails\"]").First;
+
+    /// <summary>First balance cell link to Money page (new tab).</summary>
+    public ILocator FirstMoneyBalanceLink() =>
+        Page.Locator("#clientsTableBody a[href*=\"/client/Money\"]").First;
+
+    /// <summary>Reads <c>Id</c> and <c>BookingRefId</c> from the first booking-reference link in the grid.</summary>
+    public async Task<(string ClientNewId, string BookingRefId)?> TryReadFirstBookingDetailsQueryAsync()
+    {
+        var href = await FirstBookingReferenceLink().GetAttributeAsync("href");
+        return TryParseBookingDetailsQuery(href);
+    }
+
+    /// <summary>Reads <c>Id</c> and <c>BookingRefId</c> from the first Money link in the grid.</summary>
+    public async Task<(string ClientNewId, string BookingRefId)?> TryReadFirstMoneyPageQueryAsync()
+    {
+        var href = await FirstMoneyBalanceLink().GetAttributeAsync("href");
+        return TryParseBookingDetailsQuery(href);
+    }
+
+    /// <summary>Parses <c>Id</c> / <c>BookingRefId</c> from a booking-details or money URL (query string).</summary>
+    public static (string ClientNewId, string BookingRefId)? TryParseBookingDetailsQuery(string? href)
+    {
+        if (string.IsNullOrWhiteSpace(href)) return null;
+        var qIndex = href.IndexOf('?', StringComparison.Ordinal);
+        if (qIndex < 0) return null;
+        var query = href[(qIndex + 1)..];
+        string? id = null, bookingRef = null;
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var eq = pair.IndexOf('=');
+            if (eq <= 0) continue;
+            var key = pair[..eq];
+            var value = Uri.UnescapeDataString(pair[(eq + 1)..]);
+            if (key.Equals("Id", StringComparison.OrdinalIgnoreCase)) id = value;
+            else if (key.Equals("BookingRefId", StringComparison.OrdinalIgnoreCase)) bookingRef = value;
+        }
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(bookingRef)) return null;
+        return (id, bookingRef);
+    }
 }

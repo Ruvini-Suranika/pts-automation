@@ -19,6 +19,7 @@ namespace PTS.Automation.Features.Smoke;
 public class LoginDiagnostic : BaseTest
 {
     [Test]
+    [Category(Categories.Hybrid)]
     public async Task Diagnose_member_login_response()
     {
         var creds = Settings.Users.Member;

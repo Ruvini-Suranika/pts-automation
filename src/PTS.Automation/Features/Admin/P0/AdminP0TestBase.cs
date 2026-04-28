@@ -8,7 +8,6 @@ namespace PTS.Automation.Features.Admin.P0;
 /// Concrete fixtures inherit <see cref="AdminTest"/> via this type and reuse the same landing step.
 /// </summary>
 [Category(Categories.Admin)]
-[Category(Categories.Smoke)]
 [Category(Categories.P0)]
 public abstract class AdminP0TestBase : AdminTest
 {

@@ -36,6 +36,12 @@ public sealed class DashboardPage : MemberPage
     public Task<bool> IsDebitNoteBannerVisibleAsync() => DebitNoteSection.IsVisibleAsync();
     public Task<bool> IsEnquiriesHeadVisibleAsync()   => EnquiriesHead.IsVisibleAsync();
 
+    public override async Task WaitForReadyAsync()
+    {
+        await base.WaitForReadyAsync();
+        await MemberShellOverlays.DismissCalendarNotesModalIfBlockingAsync(Page);
+    }
+
     public async Task<string> GetSelectedWeekRangeAsync() =>
         (await SelectedWeekLabel.InnerTextAsync()).Trim();
 }

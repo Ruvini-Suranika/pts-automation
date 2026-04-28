@@ -22,6 +22,7 @@ namespace PTS.Automation.Features.Member.Bookings;
 public class BookingListTests : MemberTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("Booking list page loads with the expected filter form, dropdowns, and Search / Clear controls.")]
     public async Task Booking_list_page_loads_with_expected_controls()
     {
@@ -52,6 +53,7 @@ public class BookingListTests : MemberTest
     }
 
     [Test]
+    [Category(Categories.Hybrid)]
     [Description("Clicking Search fires a POST to /Client/GetSearchClientBookingDetailinclientsearch, " +
                  "returns 200, and the grid section becomes visible.")]
     public async Task Clicking_search_fires_booking_search_endpoint_and_reveals_grid()
@@ -97,6 +99,7 @@ public class BookingListTests : MemberTest
     }
 
     [Test]
+    [Category(Categories.Hybrid)]
     [Description("Filter-value round-trip: the Email filter value is included in the AJAX request body " +
                  "when Search is clicked.")]
     public async Task Email_filter_value_is_sent_in_search_request_body()

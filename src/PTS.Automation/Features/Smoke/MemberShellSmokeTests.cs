@@ -23,6 +23,7 @@ namespace PTS.Automation.Features.Smoke;
 public class MemberShellSmokeTests : BaseTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("After valid Member login we land on the Dashboard; nav bar, profile, and settings shell are all visible.")]
     public async Task Authenticated_member_sees_dashboard_with_shell_chrome()
     {
@@ -63,6 +64,7 @@ public class MemberShellSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("The settings mega-menu opens and shows the core items we model in the POM.")]
     public async Task Settings_mega_menu_lists_expected_items()
     {
@@ -94,6 +96,7 @@ public class MemberShellSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Logout leaves the Member portal and destroys the session — " +
                  "a subsequent request to a protected page redirects to login.")]
     public async Task Logout_ends_member_session()

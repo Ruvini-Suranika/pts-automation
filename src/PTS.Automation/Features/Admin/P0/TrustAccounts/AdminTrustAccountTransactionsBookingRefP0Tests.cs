@@ -10,6 +10,8 @@ namespace PTS.Automation.Features.Admin.P0.TrustAccounts;
 public sealed class AdminTrustAccountTransactionsBookingRefP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-A2 — Booking Reference link on transaction reporting (opens from balance link).")]
     public async Task ADMIN_P0_A2_Trust_Accounts_Booking_Reference_link_on_transactions()
     {

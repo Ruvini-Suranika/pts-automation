@@ -10,6 +10,8 @@ namespace PTS.Automation.Features.Admin.P0.Credits;
 public sealed class AdminUnassignedOverviewP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-C1a — Unassigned overview screen access (Admin → Credits).")]
     public async Task ADMIN_P0_C1a_Unassigned_overview_screen_access()
     {

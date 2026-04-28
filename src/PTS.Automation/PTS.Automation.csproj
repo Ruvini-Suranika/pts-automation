@@ -11,6 +11,15 @@
     <UserSecretsId>pts-automation-4f2a9c01-7d6b-4a8e-9f1c-5b3d8e2a6c0f</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>PTS.Automation</RootNamespace>
+    <AssemblyName>PTS.Automation</AssemblyName>
+    <UserSecretsId>pts-automation-4f2a9c01-7d6b-4a8e-9f1c-5b3d8e2a6c0f</UserSecretsId>
+</PropertyGroup>
+
   <ItemGroup Label="Playwright">
     <PackageReference Include="Microsoft.Playwright" />
     <PackageReference Include="Microsoft.Playwright.NUnit" />

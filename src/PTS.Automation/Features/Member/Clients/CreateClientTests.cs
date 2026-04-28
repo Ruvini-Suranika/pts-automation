@@ -19,6 +19,7 @@ namespace PTS.Automation.Features.Member.Clients;
 public class CreateClientTests : MemberTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("Creating a client with valid details POSTs successfully and " +
                  "the browser is redirected to the new client's details page.")]
     public async Task Member_creates_client_with_valid_details()
@@ -66,6 +67,7 @@ public class CreateClientTests : MemberTest
     }
 
     [Test]
+    [Category(Categories.Hybrid)]
     [Description("Clicking Add on an empty form does NOT submit — " +
                  "the modal stays open, the client-side validator shows errors, " +
                  "and no /Client/AddClientDetail POST fires.")]

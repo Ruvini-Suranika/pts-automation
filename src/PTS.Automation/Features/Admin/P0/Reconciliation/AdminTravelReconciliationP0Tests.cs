@@ -11,6 +11,8 @@ namespace PTS.Automation.Features.Admin.P0.Reconciliation;
 public sealed class AdminTravelReconciliationP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-B1 — Reconciliation page loads; basic client-side search on grid.")]
     public async Task ADMIN_P0_B1_Reconciliation_screen_access_and_basic_search()
     {

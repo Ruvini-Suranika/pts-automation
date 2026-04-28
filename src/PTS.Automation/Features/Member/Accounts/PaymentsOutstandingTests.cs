@@ -25,7 +25,7 @@ public class PaymentsOutstandingTests : MemberTest
 {
     private const string FeatureCategory = "Accounts.PaymentsOutstanding";
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("BRANCH STORE column is present in the Payments Outstanding grid header.")]
     public async Task Branch_store_column_is_present_in_grid_header()
     {
@@ -54,7 +54,7 @@ public class PaymentsOutstandingTests : MemberTest
             "BRANCH STORE column should resolve to a positive 1-based index.");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Send Reminder with no row selected shows a 'Please select a client' error " +
                  "and does NOT open the email compose modal.")]
     public async Task Send_reminder_with_no_selection_shows_error_and_does_not_open_email_modal()
@@ -84,7 +84,7 @@ public class PaymentsOutstandingTests : MemberTest
             "Email compose modal (#addemailtemplate) should NOT open without a row selection.");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Refine search: typing in the inline grid Search box hides non-matching rows " +
                  "(client-side filter, no AJAX).")]
     public async Task Refine_search_filters_rows_client_side()
@@ -124,7 +124,7 @@ public class PaymentsOutstandingTests : MemberTest
             $"Rows before: {rowsBefore}, visible after: {visibleAfter}");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.Hybrid)]
     [Description("Payment Type dropdown: selecting Deposit / Balance / Part-Payment fires a " +
                  "POST to /TravelMemberAccount/GetSearchPaymentOutstanding and the request body " +
                  "contains the corresponding PaymentTypeId.")]
@@ -159,7 +159,7 @@ public class PaymentsOutstandingTests : MemberTest
             $"Actual body: {postData}");
     }
 
-    [Test, Category(FeatureCategory)]
+    [Test, Category(FeatureCategory), Category(Categories.UI)]
     [Description("Each rendered row's BOOKING column links to /Client/BookingDetails with the " +
                  "client + booking reference query params, opened in a new tab (target=_blank).")]
     public async Task Booking_link_in_row_points_to_BookingDetails_in_new_tab()

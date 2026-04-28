@@ -19,6 +19,7 @@ namespace PTS.Automation.Features.Smoke;
 public class MemberLoginSmokeTests : BaseTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("Member login page loads at the configured base URL and the login form is interactive.")]
     public async Task Login_page_loads_with_expected_form()
     {
@@ -36,6 +37,7 @@ public class MemberLoginSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Forgot-password link is present (indicates layout integrity even when creds unavailable).")]
     public async Task Login_page_shows_forgot_password_link()
     {
@@ -47,6 +49,7 @@ public class MemberLoginSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Valid Member credentials log in successfully and land outside the login endpoint.")]
     public async Task Member_logs_in_with_valid_credentials()
     {

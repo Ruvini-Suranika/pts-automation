@@ -11,6 +11,8 @@ namespace PTS.Automation.Features.Admin.P0.Debits;
 public sealed class AdminTrusteesAuthorisationP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-E1 — Trustee's Authorisation list readiness.")]
     public async Task ADMIN_P0_E1_Trustees_authorisation_screen_validation()
     {

@@ -61,6 +61,9 @@ public sealed class PaymentsOutstandingPage : MemberPage
     // ── Modals (post-action) ───────────────────────────────────────────────
     private ILocator EmailComposeModal => Page.Locator("#addemailtemplate");
 
+    /// <summary>Row selection checkboxes rendered by PaymentOutstanding.js (<c>class="AllPaymentDue"</c>).</summary>
+    private ILocator OutstandingRowSelectionCheckboxes => Page.Locator("input.AllPaymentDue");
+
     /// <summary>
     /// Readiness probe: the Search button is always rendered; we additionally
     /// expect <c>loadData()</c> to have fired (or be in flight) — callers can
@@ -72,7 +75,15 @@ public sealed class PaymentsOutstandingPage : MemberPage
     public Task<bool> IsSearchButtonVisibleAsync()    => SearchButton.IsVisibleAsync();
     public Task<bool> IsSendReminderVisibleAsync()    => SendReminderButton.IsVisibleAsync();
     public Task<bool> IsPaymentTypeFilterVisibleAsync() => PaymentTypeSelect.IsVisibleAsync();
-    public Task<bool> IsEmailComposeModalVisibleAsync() => EmailComposeModal.IsVisibleAsync();
+    public Task<bool> IsEmailComposeModalVisibleAsync() =>
+        Page.Locator("#addemailtemplate.show").IsVisibleAsync();
+
+    /// <summary>Count of per-row outstanding-payment checkboxes.</summary>
+    public Task<int> AssignableRowCheckboxCountAsync() => OutstandingRowSelectionCheckboxes.CountAsync();
+
+    /// <summary>Selects the first <c>AllPaymentDue</c> row checkbox.</summary>
+    public Task SelectFirstAssignableRowCheckboxAsync() =>
+        OutstandingRowSelectionCheckboxes.First.ClickAsync(new LocatorClickOptions { Force = true });
 
     /// <summary>Returns the trimmed text of every column header in the grid (in DOM order).</summary>
     public async Task<IReadOnlyList<string>> GetColumnHeadersAsync() =>

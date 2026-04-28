@@ -66,6 +66,9 @@ public sealed class PaymentDuePage : MemberPage
     private ILocator HeaderCells        => GridTable.Locator("thead tr th");
     private ILocator AllRowCheckboxes   => Page.Locator("#PaymentDue input[type='checkbox']");
 
+    /// <summary>Row selection checkboxes rendered by PaymentDue.js (<c>class="AllPaymentDue1"</c>).</summary>
+    private ILocator PaymentDueRowSelectionCheckboxes => Page.Locator("input.AllPaymentDue1");
+
     // Outstanding/Due toggle. The "Outstanding" radio is a NAV link to
     // PaymentsOutstanding; "Due" is checked by default on this page.
     private ILocator DueRadio          => Page.Locator("#Percentage");
@@ -81,10 +84,18 @@ public sealed class PaymentDuePage : MemberPage
 
     // ── Queries ─────────────────────────────────────────────────────────────
     public Task<bool> IsSendReminderVisibleAsync()    => SendReminderButton.IsVisibleAsync();
-    public Task<bool> IsEmailComposeModalVisibleAsync() => EmailComposeModal.IsVisibleAsync();
+    public Task<bool> IsEmailComposeModalVisibleAsync() =>
+        Page.Locator("#addemailtemplate.show").IsVisibleAsync();
     public Task<bool> IsCheckAllLabelVisibleAsync()   => CheckAllLabel.IsVisibleAsync();
     public Task<bool> IsCheckAllCheckedAsync()        => CheckAllInput.IsCheckedAsync();
     public Task<int>  RowCheckboxCountAsync()         => AllRowCheckboxes.CountAsync();
+
+    /// <summary>Count of per-row payment-due checkboxes (excludes header <c>#checkAll</c>).</summary>
+    public Task<int> AssignableRowCheckboxCountAsync() => PaymentDueRowSelectionCheckboxes.CountAsync();
+
+    /// <summary>Selects the first <c>AllPaymentDue1</c> row checkbox (force-click; masked native input).</summary>
+    public Task SelectFirstAssignableRowCheckboxAsync() =>
+        PaymentDueRowSelectionCheckboxes.First.ClickAsync(new LocatorClickOptions { Force = true });
 
     /// <summary>
     /// Count of row checkboxes currently in the <c>:checked</c> state.

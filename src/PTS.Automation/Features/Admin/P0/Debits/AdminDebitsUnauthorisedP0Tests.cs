@@ -11,6 +11,8 @@ namespace PTS.Automation.Features.Admin.P0.Debits;
 public sealed class AdminDebitsUnauthorisedP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-D1 — Debits Unauthorised screen (nav + grid chrome).")]
     public async Task ADMIN_P0_D1_Debits_Unauthorised_screen_validation()
     {

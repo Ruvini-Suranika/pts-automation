@@ -21,6 +21,20 @@ public sealed class AdminTrustAccountTransactionsPage : AdminPage
     protected override ILocator ReadinessIndicator => Page.Locator("#hdnTrustAccountId");
 
     /// <summary>
+    /// Hidden field proves the view model is bound; <see cref="BasePage.WaitForReadyAsync"/> uses
+    /// <see cref="WaitForSelectorState.Visible"/> which never succeeds for <c>type="hidden"</c> inputs.
+    /// </summary>
+    public override async Task WaitForReadyAsync()
+    {
+        await Page.Locator("#hdnTrustAccountId").WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Attached,
+            Timeout = Settings.Timeouts.DefaultMs
+        });
+        await Spinner.WaitUntilHiddenAsync();
+    }
+
+    /// <summary>
     /// Runs default search: pick first non-placeholder period (disables date requirement in JS) and submit.
     /// </summary>
     public async Task SubmitSearchWithFirstPeriodAsync()

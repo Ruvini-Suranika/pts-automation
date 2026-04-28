@@ -9,6 +9,12 @@ public sealed class AdminNavBar
 {
     private readonly IPage _page;
 
+    /// <summary>
+    /// Full page navigations can exceed the default action timeout; link clicks wait for navigation to finish.
+    /// </summary>
+    private static LocatorClickOptions NavClick =>
+        new() { Timeout = ConfigFactory.Settings.Timeouts.NavigationMs };
+
     public AdminNavBar(IPage page, AppUrl app)
     {
         _ = app;
@@ -17,28 +23,51 @@ public sealed class AdminNavBar
 
     private ILocator DesktopHeader => _page.Locator("header.top_header.admin-menu.desktop-menu").First;
 
+    /// <summary>
+    /// Follows a desktop menu link via <see cref="IPage.GotoAsync"/> instead of <see cref="ILocator.ClickAsync"/>.
+    /// Some admin MVC pages never satisfy Playwright's post-click navigation commit, which can hang the test for the full timeout.
+    /// </summary>
+    private async Task NavigateViaDesktopNavLinkAsync(string linkAccessibleName)
+    {
+        var link = DesktopHeader.GetByRole(AriaRole.Link, new() { Name = linkAccessibleName, Exact = true });
+        var navTimeout = ConfigFactory.Settings.Timeouts.NavigationMs;
+        var href = await link.GetAttributeAsync("href");
+        if (string.IsNullOrWhiteSpace(href))
+            throw new InvalidOperationException($"Desktop nav link '{linkAccessibleName}' has no href attribute.");
+
+        var target = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? href
+            : new Uri(new Uri(_page.Url), href).ToString();
+
+        await _page.GotoAsync(target, new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.DOMContentLoaded,
+            Timeout = navTimeout
+        });
+    }
+
     private async Task OpenBankMenuAsync()
     {
-        await DesktopHeader.Locator("a.nav-link.dropdown-toggle.bankActive").ClickAsync();
+        await DesktopHeader.Locator("a.nav-link.dropdown-toggle.bankActive").ClickAsync(NavClick);
     }
 
     private async Task OpenAdminMenuAsync()
     {
-        await DesktopHeader.Locator("a.nav-link.dropdown-toggle.adminActive").ClickAsync();
+        await DesktopHeader.Locator("a.nav-link.dropdown-toggle.adminActive").ClickAsync(NavClick);
     }
 
     /// <summary>Bank → Trust Accounts.</summary>
     public async Task GoToTrustAccountsAsync()
     {
         await OpenBankMenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Trust Accounts", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Trust Accounts");
     }
 
     /// <summary>Bank → Reconciliation.</summary>
     public async Task GoToReconciliationAsync()
     {
         await OpenBankMenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Reconciliation", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Reconciliation");
     }
 
     private async Task OpenAdminDebitsSubmenuAsync()
@@ -47,31 +76,31 @@ public sealed class AdminNavBar
         await DesktopHeader.Locator("a.dropdown-item.submenu-toggle")
             .Filter(new() { HasText = "Debits" })
             .First
-            .ClickAsync();
+            .ClickAsync(NavClick);
     }
 
     public async Task GoToDebitsUnauthorisedAsync()
     {
         await OpenAdminDebitsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Debits unauthorised", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Debits unauthorised");
     }
 
     public async Task GoToDebitsAuthorisedAsync()
     {
         await OpenAdminDebitsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Debits authorised", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Debits authorised");
     }
 
     public async Task GoToDebitsGroupingAsync()
     {
         await OpenAdminDebitsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Debits grouping", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Debits grouping");
     }
 
     public async Task GoToTrusteesAuthorisationAsync()
     {
         await OpenAdminDebitsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Trustee's authorisation", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Trustee's authorisation");
     }
 
     private async Task OpenAdminCreditsSubmenuAsync()
@@ -80,18 +109,18 @@ public sealed class AdminNavBar
         await DesktopHeader.Locator("a.dropdown-item.submenu-toggle")
             .Filter(new() { HasText = "Credits" })
             .First
-            .ClickAsync();
+            .ClickAsync(NavClick);
     }
 
     public async Task GoToUnclaimedOverviewAsync()
     {
         await OpenAdminCreditsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Unclaimed overview", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Unclaimed overview");
     }
 
     public async Task GoToUnassignedOverviewAsync()
     {
         await OpenAdminCreditsSubmenuAsync();
-        await DesktopHeader.GetByRole(AriaRole.Link, new() { Name = "Unassigned overview", Exact = true }).ClickAsync();
+        await NavigateViaDesktopNavLinkAsync("Unassigned overview");
     }
 }

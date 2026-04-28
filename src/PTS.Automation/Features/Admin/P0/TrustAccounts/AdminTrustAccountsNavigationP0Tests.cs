@@ -10,6 +10,8 @@ namespace PTS.Automation.Features.Admin.P0.TrustAccounts;
 public sealed class AdminTrustAccountsNavigationP0Tests : AdminP0TestBase
 {
     [Test]
+    [Category(Categories.UI)]
+    [Category(Categories.Smoke)]
     [Description("ADMIN-P0-A1 — Trust Accounts: reach page via Bank menu; readiness without 404.")]
     public async Task ADMIN_P0_A1_Trust_Accounts_page_navigation_via_Bank_menu()
     {

@@ -34,6 +34,7 @@ public sealed class MemberSettingsMegaMenu
     // ── Actions ────────────────────────────────────────────────────────
     public async Task OpenAsync()
     {
+        await MemberShellOverlays.DismissCalendarNotesModalIfBlockingAsync(_page);
         await Toggle.ClickAsync();
         await Panel.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
     }

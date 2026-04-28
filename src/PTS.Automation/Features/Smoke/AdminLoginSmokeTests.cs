@@ -15,6 +15,7 @@ namespace PTS.Automation.Features.Smoke;
 public class AdminLoginSmokeTests : BaseTest
 {
     [Test]
+    [Category(Categories.UI)]
     [Description("Admin login entry (shared Account/Login) loads and the form is interactive.")]
     public async Task Login_page_loads_with_expected_form()
     {
@@ -32,6 +33,7 @@ public class AdminLoginSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Forgot-password link is present on the shared login view.")]
     public async Task Login_page_shows_forgot_password_link()
     {
@@ -43,6 +45,7 @@ public class AdminLoginSmokeTests : BaseTest
     }
 
     [Test]
+    [Category(Categories.UI)]
     [Description("Valid PtsAdmin credentials reach the Admin area (not Member login).")]
     public async Task Admin_logs_in_with_valid_credentials()
     {
