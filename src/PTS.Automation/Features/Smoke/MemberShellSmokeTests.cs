@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Auth;
 using PTS.Automation.Pages.Member.Dashboard;
@@ -17,6 +18,11 @@ namespace PTS.Automation.Features.Smoke;
 /// hint) if credentials are not configured.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Smoke)]
+[AllureFeature("Member shell")]
+[AllureTag(Categories.Smoke)]
+[AllureTag(Categories.Member)]
+[AllureTag(Categories.Authentication)]
 [Category(Categories.Smoke)]
 [Category(Categories.Member)]
 [Category(Categories.Authentication)]
@@ -81,18 +87,24 @@ public class MemberShellSmokeTests : BaseTest
         });
 
         var dashboard = new DashboardPage(Page, Settings.Applications.Member);
-        await dashboard.WaitForReadyAsync();
+        await StepAsync("Wait for Dashboard readiness", () => dashboard.WaitForReadyAsync());
 
         var labels = await StepAsync("Open settings mega-menu and read item labels",
             () => dashboard.SettingsMegaMenu.GetVisibleItemLabelsAsync());
 
-        Logger.Information("Settings items visible for this user: {Items}", string.Join(", ", labels));
+        await StepAsync("Log visible settings item labels", async () =>
+        {
+            Logger.Information("Settings items visible for this user: {Items}", string.Join(", ", labels));
+        });
 
-        // Items that should be present regardless of role (Contracted Suppliers,
-        // Downloads, Email, Itinerary, Organisation, Quote, Users).
-        Assert.That(labels, Does.Contain("Contracted Suppliers"));
-        Assert.That(labels, Does.Contain("Downloads"));
-        Assert.That(labels, Does.Contain("Users"));
+        await StepAsync("Verify core settings mega-menu items", async () =>
+        {
+            // Items that should be present regardless of role (Contracted Suppliers,
+            // Downloads, Email, Itinerary, Organisation, Quote, Users).
+            Assert.That(labels, Does.Contain("Contracted Suppliers"));
+            Assert.That(labels, Does.Contain("Downloads"));
+            Assert.That(labels, Does.Contain("Users"));
+        });
     }
 
     [Test]
@@ -114,12 +126,15 @@ public class MemberShellSmokeTests : BaseTest
         });
 
         var dashboard = new DashboardPage(Page, Settings.Applications.Member);
-        await dashboard.WaitForReadyAsync();
+        await StepAsync("Wait for Dashboard readiness", () => dashboard.WaitForReadyAsync());
 
         await StepAsync("Log out via profile menu", () => dashboard.ProfileMenu.LogoutAsync());
 
-        Assert.That(Page.Url, Does.Not.Contain("/Member/").IgnoreCase,
-            $"After logout we must have left /Member/. Actual URL: {Page.Url}");
+        await StepAsync("Verify URL left Member area after logout", async () =>
+        {
+            Assert.That(Page.Url, Does.Not.Contain("/Member/").IgnoreCase,
+                $"After logout we must have left /Member/. Actual URL: {Page.Url}");
+        });
 
         // Strong check: the session is really gone. Re-request the dashboard —
         // the server must redirect us to the login page (possibly via access

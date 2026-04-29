@@ -4,7 +4,7 @@
   <RunConfiguration>
     <ResultsDirectory>./TestResults</ResultsDirectory>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <MaxCpuCount>4</MaxCpuCount>
+    <MaxCpuCount>1</MaxCpuCount>
     <EnvironmentVariables>
       <!-- Default test environment. Override on CLI: $env:TEST_ENV = "qa" -->
       <TEST_ENV>qa</TEST_ENV>
@@ -20,8 +20,8 @@
   <NUnit>
     <!-- Default 5-minute timeout per test -->
     <DefaultTimeout>300000</DefaultTimeout>
-    <!-- Run test fixtures in parallel; tests within a fixture remain sequential -->
-    <NumberOfTestWorkers>4</NumberOfTestWorkers>
+    <!-- Single worker: one Playwright / browser context at a time (sequential execution) -->
+    <NumberOfTestWorkers>1</NumberOfTestWorkers>
   </NUnit>
 
   <TestRunParameters>

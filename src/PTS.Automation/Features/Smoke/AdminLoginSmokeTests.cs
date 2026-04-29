@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Admin.Auth;
 
@@ -9,6 +10,11 @@ namespace PTS.Automation.Features.Smoke;
 /// Credential test uses <see cref="UsersSettings.PtsAdmin"/>.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Smoke)]
+[AllureFeature("Admin login")]
+[AllureTag(Categories.Smoke)]
+[AllureTag(Categories.Admin)]
+[AllureTag(Categories.Authentication)]
 [Category(Categories.Smoke)]
 [Category(Categories.Admin)]
 [Category(Categories.Authentication)]
@@ -20,16 +26,22 @@ public class AdminLoginSmokeTests : BaseTest
     public async Task Login_page_loads_with_expected_form()
     {
         var login = new AdminLoginPage(Page, Settings.Applications.Admin);
-        await login.GotoAsync();
+        await StepAsync("Open Admin login page", () => login.GotoAsync());
 
-        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(@"/Account/Login", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
-        await Expect(Page.Locator("#Username")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#Password")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#loginBtn")).ToBeEnabledAsync();
+        await StepAsync("Verify login URL and form controls", async () =>
+        {
+            await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(@"/Account/Login", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+            await Expect(Page.Locator("#Username")).ToBeVisibleAsync();
+            await Expect(Page.Locator("#Password")).ToBeVisibleAsync();
+            await Expect(Page.Locator("#loginBtn")).ToBeEnabledAsync();
+        });
 
-        var heading = await login.GetHeadingTextAsync();
-        Assert.That(heading, Does.Match("Welcome|Sign in"),
-            $"Unexpected login heading '{heading}'");
+        await StepAsync("Verify welcome or sign-in heading", async () =>
+        {
+            var heading = await login.GetHeadingTextAsync();
+            Assert.That(heading, Does.Match("Welcome|Sign in"),
+                $"Unexpected login heading '{heading}'");
+        });
     }
 
     [Test]
@@ -38,10 +50,13 @@ public class AdminLoginSmokeTests : BaseTest
     public async Task Login_page_shows_forgot_password_link()
     {
         var login = new AdminLoginPage(Page, Settings.Applications.Admin);
-        await login.GotoAsync();
+        await StepAsync("Open Admin login page", () => login.GotoAsync());
 
-        Assert.That(await login.IsForgotPasswordLinkVisibleAsync(), Is.True,
-            "Forgot password link must be visible on the login page.");
+        await StepAsync("Verify forgot password link is visible", async () =>
+        {
+            Assert.That(await login.IsForgotPasswordLinkVisibleAsync(), Is.True,
+                "Forgot password link must be visible on the login page.");
+        });
     }
 
     [Test]
@@ -60,26 +75,41 @@ public class AdminLoginSmokeTests : BaseTest
         }
 
         var login = new AdminLoginPage(Page, Settings.Applications.Admin);
-        await login.GotoAsync();
+        await StepAsync("Open Admin login page", () => login.GotoAsync());
 
         Logger.Information("Attempting PtsAdmin login as '{User}' against {Base}",
             creds.Username, Settings.Applications.Admin.BaseUrl);
 
-        await login.LoginAsync(creds.Username, creds.Password);
-        await login.WaitForPostLoginAsync();
+        await StepAsync("Submit PtsAdmin credentials", async () =>
+        {
+            await login.LoginAsync(creds.Username, creds.Password);
+            await login.WaitForPostLoginAsync();
+        });
 
-        Logger.Information("Post-login URL: {Url}", Page.Url);
-        Logger.Information("Post-login title: {Title}", await Page.TitleAsync());
-        TestContext.Out.WriteLine($"[ADMIN LOGIN OK] Landed at: {Page.Url}");
+        await StepAsync("Log post-login URL and title", async () =>
+        {
+            Logger.Information("Post-login URL: {Url}", Page.Url);
+            Logger.Information("Post-login title: {Title}", await Page.TitleAsync());
+            TestContext.Out.WriteLine($"[ADMIN LOGIN OK] Landed at: {Page.Url}");
+        });
 
-        Assert.That(Page.Url, Does.Not.Contain("/Account/Login").IgnoreCase,
-            "After a successful login we should no longer be on /Account/Login.");
+        await StepAsync("Verify navigation away from login page", async () =>
+        {
+            Assert.That(Page.Url, Does.Not.Contain("/Account/Login").IgnoreCase,
+                "After a successful login we should no longer be on /Account/Login.");
+        });
 
-        Assert.That(Page.Url, Does.Contain("/Admin/").IgnoreCase,
-            "Superuser / PtsAdmin login should land in the Admin application area.");
+        await StepAsync("Verify URL is in Admin application area", async () =>
+        {
+            Assert.That(Page.Url, Does.Contain("/Admin/").IgnoreCase,
+                "Superuser / PtsAdmin login should land in the Admin application area.");
+        });
 
-        var err = await login.GetErrorMessageAsync();
-        Assert.That(err, Is.Null.Or.Empty,
-            $"Login page is showing an error message after submit: '{err}'");
+        await StepAsync("Verify no login error message after submit", async () =>
+        {
+            var err = await login.GetErrorMessageAsync();
+            Assert.That(err, Is.Null.Or.Empty,
+                $"Login page is showing an error message after submit: '{err}'");
+        });
     }
 }

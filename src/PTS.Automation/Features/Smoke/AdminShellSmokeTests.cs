@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Admin.Home;
 
@@ -8,6 +9,11 @@ namespace PTS.Automation.Features.Smoke;
 /// opens the Sales / Enquiries home, validates layout chrome, and exercises logout.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Smoke)]
+[AllureFeature("Admin shell")]
+[AllureTag(Categories.Smoke)]
+[AllureTag(Categories.Admin)]
+[AllureTag(Categories.Authentication)]
 [Category(Categories.Smoke)]
 [Category(Categories.Admin)]
 [Category(Categories.Authentication)]
@@ -37,8 +43,11 @@ public class AdminShellSmokeTests : AdminTest
                 "Admin profile should show a display name after login.");
         });
 
-        Assert.That(await Page.TitleAsync(), Does.Contain("Enquiries").Or.Contain("Admin"),
-            $"Unexpected browser title after loading admin home: '{await Page.TitleAsync()}'");
+        await StepAsync("Verify browser title after loading admin home", async () =>
+        {
+            Assert.That(await Page.TitleAsync(), Does.Contain("Enquiries").Or.Contain("Admin"),
+                $"Unexpected browser title after loading admin home: '{await Page.TitleAsync()}'");
+        });
     }
 
     [Test]
@@ -47,13 +56,19 @@ public class AdminShellSmokeTests : AdminTest
     public async Task Logout_ends_admin_session()
     {
         var enquiries = new AdminEnquiriesPage(Page, Settings.Applications.Admin);
-        await enquiries.GotoAsync();
-        await enquiries.WaitForReadyAsync();
+        await StepAsync("Open Admin Enquiries home", async () =>
+        {
+            await enquiries.GotoAsync();
+            await enquiries.WaitForReadyAsync();
+        });
 
         await StepAsync("Log out via profile menu", () => enquiries.ProfileMenu.LogoutAsync());
 
-        Assert.That(Page.Url, Does.Not.Contain("/Admin/").IgnoreCase,
-            $"After logout we must have left /Admin/. Actual URL: {Page.Url}");
+        await StepAsync("Verify URL left Admin area after logout", async () =>
+        {
+            Assert.That(Page.Url, Does.Not.Contain("/Admin/").IgnoreCase,
+                $"After logout we must have left /Admin/. Actual URL: {Page.Url}");
+        });
 
         await StepAsync("Re-visiting /Admin/Index should redirect to login", async () =>
         {

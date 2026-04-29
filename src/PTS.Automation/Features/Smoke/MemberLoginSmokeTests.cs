@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Auth;
 
@@ -13,6 +14,11 @@ namespace PTS.Automation.Features.Smoke;
 /// user-secrets or the PTS_Users__Member__* environment variables.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Smoke)]
+[AllureFeature("Member login")]
+[AllureTag(Categories.Smoke)]
+[AllureTag(Categories.Member)]
+[AllureTag(Categories.Authentication)]
 [Category(Categories.Smoke)]
 [Category(Categories.Member)]
 [Category(Categories.Authentication)]
@@ -24,16 +30,22 @@ public class MemberLoginSmokeTests : BaseTest
     public async Task Login_page_loads_with_expected_form()
     {
         var login = new LoginPage(Page, Settings.Applications.Member);
-        await login.GotoAsync();
+        await StepAsync("Open Member login page", () => login.GotoAsync());
 
-        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(@"/Account/Login", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
-        await Expect(Page.Locator("#Username")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#Password")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#loginBtn")).ToBeEnabledAsync();
+        await StepAsync("Verify login URL and form controls", async () =>
+        {
+            await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex(@"/Account/Login", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+            await Expect(Page.Locator("#Username")).ToBeVisibleAsync();
+            await Expect(Page.Locator("#Password")).ToBeVisibleAsync();
+            await Expect(Page.Locator("#loginBtn")).ToBeEnabledAsync();
+        });
 
-        var heading = await login.GetHeadingTextAsync();
-        Assert.That(heading, Does.Match("Welcome|Sign in"),
-            $"Unexpected login heading '{heading}'");
+        await StepAsync("Verify welcome or sign-in heading", async () =>
+        {
+            var heading = await login.GetHeadingTextAsync();
+            Assert.That(heading, Does.Match("Welcome|Sign in"),
+                $"Unexpected login heading '{heading}'");
+        });
     }
 
     [Test]
@@ -42,10 +54,13 @@ public class MemberLoginSmokeTests : BaseTest
     public async Task Login_page_shows_forgot_password_link()
     {
         var login = new LoginPage(Page, Settings.Applications.Member);
-        await login.GotoAsync();
+        await StepAsync("Open Member login page", () => login.GotoAsync());
 
-        Assert.That(await login.IsForgotPasswordLinkVisibleAsync(), Is.True,
-            "Forgot password link must be visible on the login page.");
+        await StepAsync("Verify forgot password link is visible", async () =>
+        {
+            Assert.That(await login.IsForgotPasswordLinkVisibleAsync(), Is.True,
+                "Forgot password link must be visible on the login page.");
+        });
     }
 
     [Test]
@@ -64,26 +79,35 @@ public class MemberLoginSmokeTests : BaseTest
         }
 
         var login = new LoginPage(Page, Settings.Applications.Member);
-        await login.GotoAsync();
+        await StepAsync("Open Member login page", () => login.GotoAsync());
 
         Logger.Information("Attempting Member login as '{User}' against {Base}",
             creds.Username, Settings.Applications.Member.BaseUrl);
 
-        await login.LoginAsync(creds.Username, creds.Password);
-        await login.WaitForPostLoginAsync();
+        await StepAsync("Submit Member credentials", async () =>
+        {
+            await login.LoginAsync(creds.Username, creds.Password);
+            await login.WaitForPostLoginAsync();
+        });
 
-        // Diagnostic: record where the member actually lands. Useful for planning
-        // the next slices (knowing the real member dashboard / landing URL).
-        Logger.Information("Post-login URL: {Url}", Page.Url);
-        Logger.Information("Post-login title: {Title}", await Page.TitleAsync());
-        TestContext.Out.WriteLine($"[LOGIN OK] Landed at: {Page.Url}");
+        await StepAsync("Log post-login URL and title", async () =>
+        {
+            Logger.Information("Post-login URL: {Url}", Page.Url);
+            Logger.Information("Post-login title: {Title}", await Page.TitleAsync());
+            TestContext.Out.WriteLine($"[LOGIN OK] Landed at: {Page.Url}");
+        });
 
-        Assert.That(Page.Url, Does.Not.Contain("/Account/Login").IgnoreCase,
-            "After a successful login we should no longer be on /Account/Login.");
+        await StepAsync("Verify navigation away from login page", async () =>
+        {
+            Assert.That(Page.Url, Does.Not.Contain("/Account/Login").IgnoreCase,
+                "After a successful login we should no longer be on /Account/Login.");
+        });
 
-        // Sanity: there should be no error toast visible post-login.
-        var err = await login.GetErrorMessageAsync();
-        Assert.That(err, Is.Null.Or.Empty,
-            $"Login page is showing an error message after submit: '{err}'");
+        await StepAsync("Verify no login error message after submit", async () =>
+        {
+            var err = await login.GetErrorMessageAsync();
+            Assert.That(err, Is.Null.Or.Empty,
+                $"Login page is showing an error message after submit: '{err}'");
+        });
     }
 }

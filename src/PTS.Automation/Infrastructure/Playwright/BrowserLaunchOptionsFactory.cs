@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 namespace PTS.Automation.Infrastructure.Playwright;
 
 /// <summary>
@@ -56,14 +59,66 @@ public static class BrowserLaunchOptionsFactory
     public static bool EffectiveHeaded(TestSettings s) =>
         HeadedFromEnv() ?? !s.Browser.Headless;
 
+    /// <summary>Milliseconds to slow down Playwright operations by when headed (human-visible pacing).</summary>
+    public const float HeadedSlowMoMs = 1000f;
+
     /// <summary>
     /// Builds concrete <see cref="BrowserTypeLaunchOptions"/> for code paths
     /// that own the browser lifecycle directly — e.g. auth-state priming
     /// in <c>MemberTest.PrimeMemberAuthState</c>, where we cannot rely on
     /// Playwright-NUnit's per-worker <c>Browser</c> property being ready yet.
     /// </summary>
-    public static BrowserTypeLaunchOptions Build(TestSettings s) => new()
+    public static BrowserTypeLaunchOptions Build(TestSettings s)
     {
-        Headless = !EffectiveHeaded(s)
-    };
+        var headed = EffectiveHeaded(s);
+        return new BrowserTypeLaunchOptions
+        {
+            Headless = !headed,
+            SlowMo = headed ? HeadedSlowMoMs : null
+        };
+    }
+
+    /// <summary>
+    /// Merges <see cref="BrowserTypeLaunchOptions.SlowMo"/> into <c>PW_INTERNAL_ADAPTER_SETTINGS</c> so
+    /// Playwright-NUnit's per-worker browser (no <c>LaunchOptions</c> override on <c>PageTest</c>) runs at a
+    /// visible pace in headed mode. Safe to call after runsettings have populated the env var.
+    /// </summary>
+    public static void ApplyHeadedSlowMoToPlaywrightAdapter(TestSettings s)
+    {
+        if (!EffectiveHeaded(s)) return;
+
+        const string envKey = "PW_INTERNAL_ADAPTER_SETTINGS";
+        var existing = System.Environment.GetEnvironmentVariable(envKey);
+
+        JsonObject root;
+        if (string.IsNullOrWhiteSpace(existing))
+            root = new JsonObject();
+        else
+        {
+            try
+            {
+                root = JsonNode.Parse(existing)!.AsObject();
+            }
+            catch
+            {
+                root = new JsonObject();
+            }
+        }
+
+        JsonObject? launch = null;
+        if (root["LaunchOptions"] is JsonObject pascal)
+            launch = pascal;
+        else if (root["launchOptions"] is JsonObject camel)
+            launch = camel;
+
+        if (launch == null)
+        {
+            launch = new JsonObject();
+            root["LaunchOptions"] = launch;
+        }
+
+        launch["slowMo"] = HeadedSlowMoMs;
+
+        System.Environment.SetEnvironmentVariable(envKey, JsonSerializer.Serialize(root));
+    }
 }

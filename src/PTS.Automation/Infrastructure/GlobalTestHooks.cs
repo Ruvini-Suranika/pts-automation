@@ -28,6 +28,7 @@ public sealed class GlobalTestHooks
         // BEFORE Playwright-NUnit's per-worker browser service initialises.
         // (PageTest has no BrowserOptions() override point — env vars are the API.)
         BrowserLaunchOptionsFactory.ApplyConfigToEnv(s);
+        BrowserLaunchOptionsFactory.ApplyHeadedSlowMoToPlaywrightAdapter(s);
 
         ClearStaleAuthState(s);
 
@@ -41,6 +42,8 @@ public sealed class GlobalTestHooks
         Log.Root.Information("  Admin  base URL    : {Url}", s.Applications.Admin.BaseUrl);
         Log.Root.Information("  Browser            : {Browser}", browser);
         Log.Root.Information("  Mode               : {Mode}", headed ? "headed" : "headless");
+        if (headed)
+            Log.Root.Information("  SlowMo (headed)    : {Ms} ms", BrowserLaunchOptionsFactory.HeadedSlowMoMs);
         Log.Root.Information("  Viewport           : {W}x{H}", s.Browser.Viewport.Width, s.Browser.Viewport.Height);
         Log.Root.Information("  Trace retention    : {Trace}", s.Browser.Trace);
         Log.Root.Information("  Video retention    : {Video}", s.Browser.Video);

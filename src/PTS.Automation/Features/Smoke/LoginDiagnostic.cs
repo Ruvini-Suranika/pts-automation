@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Auth;
 
@@ -14,6 +15,10 @@ namespace PTS.Automation.Features.Smoke;
 /// </code>
 /// </summary>
 [TestFixture]
+[AllureSuite("Diagnostic")]
+[AllureFeature("Login")]
+[AllureTag("Diagnostic")]
+[AllureTag(Categories.Hybrid)]
 [Category("Diagnostic")]
 [Explicit("Debug helper — run manually when login behaviour changes")]
 public class LoginDiagnostic : BaseTest
@@ -26,23 +31,30 @@ public class LoginDiagnostic : BaseTest
         Assume.That(creds.IsConfigured, "Member creds required for this diagnostic.");
 
         var login = new LoginPage(Page, Settings.Applications.Member);
-        await login.GotoAsync();
-        Logger.Information("On login page, URL: {Url}", Page.Url);
+        await StepAsync("Open Member login page", () => login.GotoAsync());
 
-        // Subscribe to the LoginCheck response BEFORE clicking submit.
+        await StepAsync("Log current login page URL", async () =>
+        {
+            Logger.Information("On login page, URL: {Url}", Page.Url);
+        });
+
+        // Subscribe before submit so the response is captured when the login button is clicked.
         var loginCheckTask = Page.WaitForResponseAsync(
             r => r.Url.Contains("/Account/LoginCheck", StringComparison.OrdinalIgnoreCase),
             new PageWaitForResponseOptions { Timeout = 30_000 });
 
-        // Fill and submit.
-        await Page.Locator("#Username").FillAsync(creds.Username);
-        await Page.Locator("#Password").FillAsync(creds.Password);
-        await Page.Locator("#loginBtn").ClickAsync();
+        await StepAsync("Fill username and password", async () =>
+        {
+            await Page.Locator("#Username").FillAsync(creds.Username);
+            await Page.Locator("#Password").FillAsync(creds.Password);
+        });
+
+        await StepAsync("Click login button", () => Page.Locator("#loginBtn").ClickAsync());
 
         IResponse response;
         try
         {
-            response = await loginCheckTask;
+            response = await StepAsync("Wait for LoginCheck response", () => loginCheckTask);
         }
         catch (TimeoutException)
         {
@@ -53,27 +65,33 @@ public class LoginDiagnostic : BaseTest
             return;
         }
 
-        // Dump everything useful.
-        var status = response.Status;
-        string bodyText;
-        try { bodyText = await response.TextAsync(); }
-        catch (Exception ex) { bodyText = $"<could not read body: {ex.Message}>"; }
+        await StepAsync("Log LoginCheck response status and body", async () =>
+        {
+            var status = response.Status;
+            string bodyText;
+            try { bodyText = await response.TextAsync(); }
+            catch (Exception ex) { bodyText = $"<could not read body: {ex.Message}>"; }
 
-        Logger.Information("LoginCheck response status: {Status}", status);
-        Logger.Information("LoginCheck response body (first 2000 chars): {Body}",
-            bodyText.Length > 2000 ? bodyText[..2000] + "…(truncated)" : bodyText);
+            Logger.Information("LoginCheck response status: {Status}", status);
+            Logger.Information("LoginCheck response body (first 2000 chars): {Body}",
+                bodyText.Length > 2000 ? bodyText[..2000] + "…(truncated)" : bodyText);
+        });
 
-        // Give the client-side redirect a chance to fire.
-        await Page.WaitForTimeoutAsync(3000);
+        await StepAsync("Brief wait for client-side redirect", () => Page.WaitForTimeoutAsync(3000));
 
-        Logger.Information("Post-submit URL: {Url}",   Page.Url);
-        Logger.Information("Post-submit title: {Title}", await Page.TitleAsync());
+        await StepAsync("Log post-submit URL and title", async () =>
+        {
+            Logger.Information("Post-submit URL: {Url}", Page.Url);
+            Logger.Information("Post-submit title: {Title}", await Page.TitleAsync());
+        });
 
-        await DumpDiagnosticsAsync("after-loginCheck");
+        await StepAsync("Write diagnostic screenshot and HTML", () => DumpDiagnosticsAsync("after-loginCheck"));
 
-        // Do NOT assert pass/fail here — this test is purely diagnostic.
-        TestContext.Out.WriteLine($"LoginCheck status: {status}");
-        TestContext.Out.WriteLine($"Post-submit URL:   {Page.Url}");
+        await StepAsync("Emit summary to test output", async () =>
+        {
+            TestContext.Out.WriteLine($"LoginCheck status: {response.Status}");
+            TestContext.Out.WriteLine($"Post-submit URL:   {Page.Url}");
+        });
     }
 
     private async Task DumpDiagnosticsAsync(string tag)

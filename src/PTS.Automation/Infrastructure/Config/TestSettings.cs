@@ -25,6 +25,48 @@ public sealed class TestSettings
 public sealed class TestDataSettings
 {
     public MemberTestData Member { get; set; } = new();
+
+    /// <summary>Optional explicit Admin booking context for deep links when search is not used.</summary>
+    public AdminBookingsTestData AdminBookings { get; set; } = new();
+
+    /// <summary>Optional Admin client search / <c>ClientDetails</c> identifiers.</summary>
+    public AdminClientsTestData AdminClients { get; set; } = new();
+
+    /// <summary>Trust accounts / bank / itinerary P1 tests (member admin id, fee assertions).</summary>
+    public AdminTrustAndBankTestData AdminTrustAndBank { get; set; } = new();
+}
+
+/// <summary>Admin trust/bank P1 optional seeds.</summary>
+public sealed class AdminTrustAndBankTestData
+{
+    /// <summary>Member id for <c>/Admin/MemberAdmin/{id}</c> (PTS system setup, membership fees).</summary>
+    public long MemberAdminMemberId { get; set; }
+
+    public bool HasMemberAdminMemberId => MemberAdminMemberId > 0;
+}
+
+/// <summary>Admin <c>SearchClient</c> / <c>ClientDetails</c> test data.</summary>
+public sealed class AdminClientsTestData
+{
+    /// <summary>New client id for <c>/Admin/ClientDetails?id=…</c>.</summary>
+    public string ClientNewId { get; set; } = "";
+
+    /// <summary>Value for the Client Reference filter (<c>#txtClientReference</c>).</summary>
+    public string SearchClientReference { get; set; } = "";
+
+    public bool HasClientNewId => !string.IsNullOrWhiteSpace(ClientNewId);
+}
+
+/// <summary>Admin <c>BookingDetails</c> / <c>Money</c> URL parameters (<c>Id</c> + booking reference).</summary>
+public sealed class AdminBookingsTestData
+{
+    /// <summary>New client id string (<c>ViewBag.ClientRefNew</c>) used as the <c>Id</c> query parameter.</summary>
+    public string ClientNewId { get; set; } = "";
+
+    public string BookingReferenceId { get; set; } = "";
+
+    public bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(ClientNewId) && !string.IsNullOrWhiteSpace(BookingReferenceId);
 }
 
 public sealed class MemberTestData

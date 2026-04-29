@@ -6,10 +6,15 @@ namespace PTS.Automation.Infrastructure.Fixtures;
 /// <summary>
 /// Base fixture for tests that require an authenticated PTS Admin user.
 /// See <see cref="MemberTest"/> for the auth-state caching mechanism.
+/// Enables structured Serilog output after each <see cref="BaseTest.StepAsync"/> and a
+/// per-test summary (see <see cref="BaseTest.RegisterTestData"/>).
 /// </summary>
+[NonParallelizable]
 public abstract class AdminTest : BaseTest
 {
     private const string Role = "admin";
+
+    protected override bool LogStepResultDetailAndTestSummary => true;
 
     public override BrowserNewContextOptions ContextOptions()
     {

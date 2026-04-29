@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Data.Builders;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Clients;
@@ -13,6 +14,11 @@ namespace PTS.Automation.Features.Member.Clients;
 ///   → server response → post-create redirect.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Create client")]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag(Categories.Clients)]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 [Category(Categories.Clients)]

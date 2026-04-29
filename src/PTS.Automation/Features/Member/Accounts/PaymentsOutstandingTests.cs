@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Accounts;
 using PTS.Automation.Pages.Member.Dashboard;
@@ -19,6 +20,11 @@ namespace PTS.Automation.Features.Member.Accounts;
 /// has no outstanding payments for the test member.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Payments outstanding")]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag("Accounts.PaymentsOutstanding")]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 public class PaymentsOutstandingTests : MemberTest

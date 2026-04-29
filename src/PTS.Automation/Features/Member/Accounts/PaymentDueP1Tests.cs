@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Accounts;
 
@@ -5,6 +6,12 @@ namespace PTS.Automation.Features.Member.Accounts;
 
 /// <summary>P1 critical coverage: Member → Accounts → Payments Due.</summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Payment due")]
+[AllureTag(Categories.P1)]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag("Accounts.PaymentDue")]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 [Category("Accounts.PaymentDue")]

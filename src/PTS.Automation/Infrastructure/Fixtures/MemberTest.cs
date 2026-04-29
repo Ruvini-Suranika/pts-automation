@@ -7,10 +7,15 @@ namespace PTS.Automation.Infrastructure.Fixtures;
 /// Base fixture for tests that require an authenticated Member user.
 /// The first test of the fixture performs a real UI login and persists
 /// Playwright's <c>storageState</c> to disk; subsequent tests reuse it.
+/// Enables structured Serilog output after each <see cref="BaseTest.StepAsync"/> and a
+/// per-test summary (see <see cref="BaseTest.RegisterTestData"/>).
 /// </summary>
+[NonParallelizable]
 public abstract class MemberTest : BaseTest
 {
     private const string Role = "member";
+
+    protected override bool LogStepResultDetailAndTestSummary => true;
 
     public override BrowserNewContextOptions ContextOptions()
     {

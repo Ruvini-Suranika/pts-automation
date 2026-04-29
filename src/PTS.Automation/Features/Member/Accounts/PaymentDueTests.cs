@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Accounts;
 
@@ -19,6 +20,11 @@ namespace PTS.Automation.Features.Member.Accounts;
 /// no payments due rather than failing.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Payment due")]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag("Accounts.PaymentDue")]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 public class PaymentDueTests : MemberTest
@@ -34,10 +40,17 @@ public class PaymentDueTests : MemberTest
 
         var headers = await StepAsync("Read column headers",
             () => page.GetColumnHeadersAsync());
-        Logger.Information("Headers: {Headers}", string.Join(" | ", headers));
 
-        Assert.That(await page.ColumnIndexOfAsync("BRANCH STORE"), Is.GreaterThan(0),
-            $"Expected a BRANCH STORE column. Got: {string.Join(" | ", headers)}");
+        await StepAsync("Log column headers", async () =>
+        {
+            Logger.Information("Headers: {Headers}", string.Join(" | ", headers));
+        });
+
+        await StepAsync("Verify BRANCH STORE column is present", async () =>
+        {
+            Assert.That(await page.ColumnIndexOfAsync("BRANCH STORE"), Is.GreaterThan(0),
+                $"Expected a BRANCH STORE column. Got: {string.Join(" | ", headers)}");
+        });
     }
 
     [Test, Category(FeatureCategory), Category(Categories.UI)]
@@ -60,20 +73,31 @@ public class PaymentDueTests : MemberTest
         // what the rest of the test asserts.
 
         await StepAsync("Click 'select all' header checkbox", () => page.ClickCheckAllAsync());
-        await Page.WaitForTimeoutAsync(200);
+        await StepAsync("Brief settle wait after select-all", () => Page.WaitForTimeoutAsync(200));
 
-        var checkedAfterSelect = await page.CheckedRowCountAsync();
-        Logger.Information("After select-all: {Checked}/{Total} row checkboxes ticked",
-            checkedAfterSelect, rowBoxes);
+        var checkedAfterSelect = await StepAsync("Count checked row checkboxes after select-all",
+            () => page.CheckedRowCountAsync());
 
-        Assert.That(checkedAfterSelect, Is.EqualTo(rowBoxes),
-            "After clicking select-all, every visible row checkbox should be ticked.");
+        await StepAsync("Log checkbox selection state", async () =>
+        {
+            Logger.Information("After select-all: {Checked}/{Total} row checkboxes ticked",
+                checkedAfterSelect, rowBoxes);
+        });
+
+        await StepAsync("Verify all row checkboxes are ticked", async () =>
+        {
+            Assert.That(checkedAfterSelect, Is.EqualTo(rowBoxes),
+                "After clicking select-all, every visible row checkbox should be ticked.");
+        });
 
         await StepAsync("Click 'select all' again to clear", () => page.ClickCheckAllAsync());
-        await Page.WaitForTimeoutAsync(200);
+        await StepAsync("Brief settle wait after clear", () => Page.WaitForTimeoutAsync(200));
 
-        Assert.That(await page.CheckedRowCountAsync(), Is.EqualTo(0),
-            "After clicking select-all a second time, all row checkboxes should be cleared.");
+        await StepAsync("Verify all row checkboxes are cleared", async () =>
+        {
+            Assert.That(await page.CheckedRowCountAsync(), Is.EqualTo(0),
+                "After clicking select-all a second time, all row checkboxes should be cleared.");
+        });
     }
 
     [Test, Category(FeatureCategory), Category(Categories.UI)]
@@ -87,17 +111,24 @@ public class PaymentDueTests : MemberTest
         // Initial load: Send Reminder is hidden by JS until loadData() returns.
         await StepAsync("Wait for grid load", () => page.WaitForGridLoadedAsync());
 
-        Assert.That(await page.IsSendReminderVisibleAsync(), Is.True,
-            "Send Reminder button should become visible after the initial AJAX completes " +
-            "(per PaymentDue.js: $('#OpenEmailModal').show() in the success handler).");
+        await StepAsync("Verify Send Reminder button is visible", async () =>
+        {
+            Assert.That(await page.IsSendReminderVisibleAsync(), Is.True,
+                "Send Reminder button should become visible after the initial AJAX completes " +
+                "(per PaymentDue.js: $('#OpenEmailModal').show() in the success handler).");
+        });
 
         await StepAsync("Click Send Reminder without selecting any row",
             () => page.ClickSendReminderAsync());
 
-        await Page.WaitForTimeoutAsync(400);
-        Assert.That(await page.IsEmailComposeModalVisibleAsync(), Is.False,
-            "Email compose modal (#addemailtemplate) must NOT open without a row selection. " +
-            "Per the dev JS, an inline error is shown instead.");
+        await StepAsync("Brief wait after Send Reminder click", () => Page.WaitForTimeoutAsync(400));
+
+        await StepAsync("Verify email compose modal does not open", async () =>
+        {
+            Assert.That(await page.IsEmailComposeModalVisibleAsync(), Is.False,
+                "Email compose modal (#addemailtemplate) must NOT open without a row selection. " +
+                "Per the dev JS, an inline error is shown instead.");
+        });
     }
 
     [Test, Category(FeatureCategory), Category(Categories.UI)]
@@ -117,12 +148,17 @@ public class PaymentDueTests : MemberTest
         await StepAsync($"Type sentinel '{sentinel}' into #searchDue",
             () => page.SetGridSearchAsync(sentinel));
 
-        await Page.WaitForTimeoutAsync(300);
+        await StepAsync("Brief wait after refine search", () => Page.WaitForTimeoutAsync(300));
 
-        var visibleAfter = await Page.Locator("#PaymentDue tr:visible").CountAsync();
-        Assert.That(visibleAfter, Is.EqualTo(0),
-            $"After applying a non-matching filter all rows should be hidden. " +
-            $"Rows before: {rowsBefore}, visible after: {visibleAfter}");
+        var visibleAfter = await StepAsync("Count visible Payment Due rows after refine",
+            () => Page.Locator("#PaymentDue tr:visible").CountAsync());
+
+        await StepAsync("Verify refine hides all rows", async () =>
+        {
+            Assert.That(visibleAfter, Is.EqualTo(0),
+                $"After applying a non-matching filter all rows should be hidden. " +
+                $"Rows before: {rowsBefore}, visible after: {visibleAfter}");
+        });
     }
 
     [Test, Category(FeatureCategory), Category(Categories.Hybrid)]
@@ -144,13 +180,19 @@ public class PaymentDueTests : MemberTest
         var (status, postData) = await StepAsync("Click Search and capture request",
             () => page.SearchAndCaptureAsync());
 
-        Assert.That(status, Is.EqualTo(200),
-            $"Search endpoint should return 200 OK. Got {status}.");
+        await StepAsync("Verify search response status", async () =>
+        {
+            Assert.That(status, Is.EqualTo(200),
+                $"Search endpoint should return 200 OK. Got {status}.");
+        });
 
-        Assert.That(postData, Does.Contain($"PaymentTypeId={expectedTypeId}").IgnoreCase
-                              .Or.Contain($"\"PaymentTypeId\":\"{expectedTypeId}\"").IgnoreCase,
-            $"POST body should carry PaymentTypeId={expectedTypeId} for label '{label}'.\n" +
-            $"Actual body: {postData}");
+        await StepAsync("Verify PaymentTypeId in search POST body", async () =>
+        {
+            Assert.That(postData, Does.Contain($"PaymentTypeId={expectedTypeId}").IgnoreCase
+                                  .Or.Contain($"\"PaymentTypeId\":\"{expectedTypeId}\"").IgnoreCase,
+                $"POST body should carry PaymentTypeId={expectedTypeId} for label '{label}'.\n" +
+                $"Actual body: {postData}");
+        });
     }
 
     [Test, Category(FeatureCategory), Category(Categories.UI)]
@@ -167,16 +209,23 @@ public class PaymentDueTests : MemberTest
             Assert.Ignore("No payment-due rows — no booking link to verify.");
 
         var link = page.FirstRowBookingLink();
-        var href = await link.GetAttributeAsync("href");
+        var href = await StepAsync("Read first-row booking link href",
+            () => link.GetAttributeAsync("href"));
 
-        Logger.Information("First-row booking link: href={Href}", href);
+        await StepAsync("Log booking link href", async () =>
+        {
+            Logger.Information("First-row booking link: href={Href}", href);
+        });
 
-        Assert.That(href, Is.Not.Null.And.Not.Empty, "Booking link must have an href.");
-        Assert.That(href, Does.Contain("/Client/BookingDetails").IgnoreCase,
-            $"Booking link href should point to /Client/BookingDetails. Actual: {href}");
-        Assert.That(href, Does.Contain("Id=").IgnoreCase,
-            "Booking link href should carry the client reference (Id=...).");
-        Assert.That(href, Does.Contain("BookingRefId=").IgnoreCase,
-            "Booking link href should carry the BookingRefId query param.");
+        await StepAsync("Verify booking link href shape", async () =>
+        {
+            Assert.That(href, Is.Not.Null.And.Not.Empty, "Booking link must have an href.");
+            Assert.That(href, Does.Contain("/Client/BookingDetails").IgnoreCase,
+                $"Booking link href should point to /Client/BookingDetails. Actual: {href}");
+            Assert.That(href, Does.Contain("Id=").IgnoreCase,
+                "Booking link href should carry the client reference (Id=...).");
+            Assert.That(href, Does.Contain("BookingRefId=").IgnoreCase,
+                "Booking link href should carry the BookingRefId query param.");
+        });
     }
 }

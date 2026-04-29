@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Admin.Debits;
 using PTS.Automation.Pages.Admin.Shell;
@@ -6,6 +7,11 @@ namespace PTS.Automation.Features.Admin.P0.Debits;
 
 /// <seealso cref="Pages.Admin.Debits.AdminDebitsGroupingPage"/>
 [TestFixture]
+[AllureSuite(Categories.Admin)]
+[AllureFeature("Debits grouping")]
+[AllureTag(Categories.P0)]
+[AllureTag(Categories.EpicDebits)]
+[AllureTag(Categories.Debits)]
 [Category(Categories.EpicDebits)]
 [Category(Categories.Debits)]
 public sealed class AdminDebitsGroupingP0Tests : AdminP0TestBase
@@ -16,24 +22,35 @@ public sealed class AdminDebitsGroupingP0Tests : AdminP0TestBase
     [Description("ADMIN-P0-D3 — Debits Grouping: table + Group + Pay/Currency affordances when rows exist.")]
     public async Task ADMIN_P0_D3_Debits_Grouping_screen_validation()
     {
-        await LandOnAdminEnquiriesAsync();
+        await StepAsync("Land on Admin Enquiries", () => LandOnAdminEnquiriesAsync());
 
         var nav = new AdminNavBar(Page, Settings.Applications.Admin);
-        await nav.GoToDebitsGroupingAsync();
+        await StepAsync("Open Debits Grouping", () => nav.GoToDebitsGroupingAsync());
 
         var pageObj = new AdminDebitsGroupingPage(Page, Settings.Applications.Admin);
-        await pageObj.WaitForReadyAsync();
+        await StepAsync("Wait for Debits Grouping page", () => pageObj.WaitForReadyAsync());
 
-        Assert.That(Page.Url, Does.Contain("DebitsGrouping").IgnoreCase);
-        Assert.That(await pageObj.IsGroupingTableVisibleAsync(), Is.True);
+        await StepAsync("Verify Debits Grouping URL", async () =>
+        {
+            Assert.That(Page.Url, Does.Contain("DebitsGrouping").IgnoreCase);
+        });
 
-        var dataRowCount = await Page.Locator("#debitgrouping tbody tr").CountAsync();
+        await StepAsync("Verify grouping table is visible", async () =>
+        {
+            Assert.That(await pageObj.IsGroupingTableVisibleAsync(), Is.True);
+        });
+
+        var dataRowCount = await StepAsync("Count grouping table data rows",
+            () => Page.Locator("#debitgrouping tbody tr").CountAsync());
         if (dataRowCount > 0)
         {
-            var payCount = await pageObj.PayLinks.CountAsync();
-            var curCount = await pageObj.CurrencyLinks.CountAsync();
-            Assert.That(payCount + curCount, Is.GreaterThan(0),
-                "With at least one grouping row, expect Pay and/or Currency affordances in the grid.");
+            await StepAsync("Verify Pay and/or Currency affordances when rows exist", async () =>
+            {
+                var payCount = await pageObj.PayLinks.CountAsync();
+                var curCount = await pageObj.CurrencyLinks.CountAsync();
+                Assert.That(payCount + curCount, Is.GreaterThan(0),
+                    "With at least one grouping row, expect Pay and/or Currency affordances in the grid.");
+            });
         }
     }
 }

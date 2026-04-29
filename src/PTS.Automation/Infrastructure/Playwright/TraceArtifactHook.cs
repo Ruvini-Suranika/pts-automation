@@ -1,3 +1,5 @@
+using Allure.Net.Commons;
+
 namespace PTS.Automation.Infrastructure.Playwright;
 
 /// <summary>
@@ -48,6 +50,14 @@ public static class TraceArtifactHook
 
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = path, FullPage = true });
         TestContext.AddTestAttachment(path, "Failure screenshot");
+        try
+        {
+            AllureApi.AddAttachment(path, "Failure screenshot");
+        }
+        catch (InvalidOperationException)
+        {
+            // No active Allure test/fixture context (e.g. diagnostic runs without the adapter).
+        }
     }
 
     private static string SafeName(string input)

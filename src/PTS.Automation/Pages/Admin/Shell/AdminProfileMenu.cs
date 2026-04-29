@@ -38,6 +38,33 @@ public sealed class AdminProfileMenu
         await Menu.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
     }
 
+    /// <summary>Opens the profile menu and navigates to <c>Admin/AdminProfile</c>.</summary>
+    public async Task GoToViewProfileAsync()
+    {
+        await OpenAsync();
+        var profileLink = Menu.Locator("a.dropdown-item").Filter(new() { HasText = "View Profile" }).First;
+        var navTimeout = ConfigFactory.Settings.Timeouts.NavigationMs;
+        var wait = _page.WaitForResponseAsync(
+            r => r.Url.Contains("/Admin/AdminProfile", StringComparison.OrdinalIgnoreCase)
+                 && string.Equals(r.Request.Method, "GET", StringComparison.OrdinalIgnoreCase),
+            new PageWaitForResponseOptions { Timeout = navTimeout });
+
+        await profileLink.ClickAsync(new LocatorClickOptions { Timeout = navTimeout });
+
+        try
+        {
+            await wait;
+        }
+        catch (TimeoutException)
+        {
+            // SPA-style navigation may not emit a classic document response in some environments.
+        }
+
+        await _page.WaitForURLAsync(
+            url => url.Contains("/Admin/AdminProfile", StringComparison.OrdinalIgnoreCase),
+            new PageWaitForURLOptions { Timeout = navTimeout });
+    }
+
     public async Task LogoutAsync()
     {
         await OpenAsync();

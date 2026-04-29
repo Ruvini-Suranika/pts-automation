@@ -56,6 +56,25 @@ public sealed class AdminNavBar
         await DesktopHeader.Locator("a.nav-link.dropdown-toggle.adminActive").ClickAsync(NavClick);
     }
 
+    private async Task OpenMembersMenuAsync()
+    {
+        await DesktopHeader.Locator("a.nav-link.dropdown-toggle.memberActive.restricted_button").ClickAsync(NavClick);
+    }
+
+    /// <summary>Members → Members list (<c>Admin/Members</c>).</summary>
+    public async Task GoToMembersListAsync()
+    {
+        await OpenMembersMenuAsync();
+        await NavigateViaDesktopNavLinkAsync("Members");
+    }
+
+    /// <summary>Members → Applying (<c>Admin/Applying</c>).</summary>
+    public async Task GoToApplyingAsync()
+    {
+        await OpenMembersMenuAsync();
+        await NavigateViaDesktopNavLinkAsync("Applying");
+    }
+
     /// <summary>Bank → Trust Accounts.</summary>
     public async Task GoToTrustAccountsAsync()
     {
@@ -122,5 +141,67 @@ public sealed class AdminNavBar
     {
         await OpenAdminCreditsSubmenuAsync();
         await NavigateViaDesktopNavLinkAsync("Unassigned overview");
+    }
+
+    /// <summary>Admin → Bookings (opens <c>Admin/BookingSearch</c>).</summary>
+    public async Task GoToBookingSearchAsync()
+    {
+        await OpenAdminMenuAsync();
+        var link = DesktopHeader.Locator("a.dropdown-item[href*='BookingSearch']").First;
+        var href = await link.GetAttributeAsync("href");
+        if (string.IsNullOrWhiteSpace(href))
+            throw new InvalidOperationException("Admin Bookings nav link has no href.");
+
+        var target = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? href
+            : new Uri(new Uri(_page.Url), href).ToString();
+
+        await _page.GotoAsync(target, new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.DOMContentLoaded,
+            Timeout = ConfigFactory.Settings.Timeouts.NavigationMs
+        });
+    }
+
+    private async Task OpenAdminBookingsSubmenuAsync()
+    {
+        await OpenAdminMenuAsync();
+        await DesktopHeader.Locator("a.dropdown-item.submenu-toggle")
+            .Filter(new() { HasText = "Bookings" })
+            .First
+            .ClickAsync(NavClick);
+    }
+
+    /// <summary>Admin → Bookings → Clients (<c>Admin/SearchClient</c>).</summary>
+    public async Task GoToClientSearchAsync()
+    {
+        await OpenAdminBookingsSubmenuAsync();
+        await NavigateViaDesktopNavLinkAsync("Clients");
+    }
+
+    /// <summary>Header settings (gear) mega menu → Users → <c>Admin/MemberUser</c>.</summary>
+    public async Task GoToSettingsMemberUsersAsync()
+    {
+        await DesktopHeader.Locator("#settingDropdown").ClickAsync(NavClick);
+        var link = _page.Locator(".MegaContainer a[href*='MemberUser']").First;
+        await link.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = ConfigFactory.Settings.Timeouts.DefaultMs
+        });
+
+        var href = await link.GetAttributeAsync("href");
+        if (string.IsNullOrWhiteSpace(href))
+            throw new InvalidOperationException("Settings mega menu Users link has no href.");
+
+        var target = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? href
+            : new Uri(new Uri(_page.Url), href).ToString();
+
+        await _page.GotoAsync(target, new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.DOMContentLoaded,
+            Timeout = ConfigFactory.Settings.Timeouts.NavigationMs
+        });
     }
 }

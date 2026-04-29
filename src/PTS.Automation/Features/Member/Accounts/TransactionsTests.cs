@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Accounts;
 
@@ -19,6 +20,11 @@ namespace PTS.Automation.Features.Member.Accounts;
 /// if the QA test member has no transactions to render, rather than failing.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Transactions")]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag("Accounts.Transactions")]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 public class TransactionsTests : MemberTest

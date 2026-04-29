@@ -1,3 +1,4 @@
+using Allure.NUnit.Attributes;
 using PTS.Automation.Infrastructure;
 using PTS.Automation.Pages.Member.Clients;
 using PTS.Automation.Pages.Member.Dashboard;
@@ -16,6 +17,11 @@ namespace PTS.Automation.Features.Member.Bookings;
 ///   3. Applying the Email filter round-trips the value into the POST body.
 /// </summary>
 [TestFixture]
+[AllureSuite(Categories.Member)]
+[AllureFeature("Booking list")]
+[AllureTag(Categories.Regression)]
+[AllureTag(Categories.Member)]
+[AllureTag(Categories.Bookings)]
 [Category(Categories.Regression)]
 [Category(Categories.Member)]
 [Category(Categories.Bookings)]
