@@ -6,6 +6,7 @@ set "CSPROJ=src\PTS.Automation\PTS.Automation.csproj"
 set "FILTER=TestCategory=P1&TestCategory=Member"
 set "CONFIG=Debug"
 set "TFM=net9.0"
+rem Allure JSON is emitted next to PTS.Automation.dll (see Properties\AllurePathBootstrap.cs).
 set "BINRESULTS=src\PTS.Automation\bin\%CONFIG%\%TFM%\allure-results"
 set "RUNSETTINGS=%CD%\.runsettings"
 
